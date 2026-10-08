@@ -1,0 +1,13 @@
+{
+  "name": "address-sorter",
+  "version": "1.0.0",
+  "description": "Upload a spreadsheet of addresses and get them back sorted into the best walking order.",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "start": "python3 -m http.server 8000"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

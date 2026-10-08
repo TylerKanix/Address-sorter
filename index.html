@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Address Sorter – best walking order</title>
+    <meta name="description" content="Upload a spreadsheet of addresses and get them back sorted into the shortest walking order." />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%231a7f64'/%3E%3Cpath d='M9 22l5-6 4 3 5-8' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="assets/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap">
+        <h1><span class="logo" aria-hidden="true"></span>Address Sorter</h1>
+        <p class="tagline">Upload a spreadsheet of addresses and get them back in the best walking order.</p>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <!-- Step 1: upload -->
+      <section id="step-upload" class="card" aria-labelledby="upload-title">
+        <h2 id="upload-title"><span class="step-num">1</span> Add your addresses</h2>
+        <label id="dropzone" class="dropzone" for="file-input">
+          <input id="file-input" type="file" accept=".xlsx,.xlsm,.xls,.ods,.csv,.tsv,.txt" />
+          <span class="dropzone-icon" aria-hidden="true"></span>
+          <strong>Drop a spreadsheet here</strong>
+          <span>or <span class="link-like">choose a file</span></span>
+          <small>Excel (.xlsx, .xls), OpenDocument (.ods) or CSV</small>
+        </label>
+        <div class="upload-alt">
+          <details id="paste-panel">
+            <summary>…or paste addresses</summary>
+            <p class="hint">One address per line, or copy and paste the cells straight from your spreadsheet (include the header row if it has one).</p>
+            <textarea id="paste-input" rows="7" placeholder="123 Main St, Springfield, IL 62701&#10;456 Oak Ave, Springfield, IL 62704"></textarea>
+            <button id="paste-go" type="button" class="btn">Use these addresses</button>
+          </details>
+          <button id="sample-go" type="button" class="btn btn-quiet">Try it with sample addresses</button>
+        </div>
+        <p id="upload-error" class="error" role="alert" hidden></p>
+      </section>
+
+      <!-- Step 2: check columns and options -->
+      <section id="step-configure" class="card" aria-labelledby="configure-title" hidden>
+        <div class="card-head">
+          <h2 id="configure-title"><span class="step-num">2</span> Check your data</h2>
+          <button type="button" class="btn btn-quiet btn-small" data-action="restart">Use a different file</button>
+        </div>
+        <p id="file-summary" class="muted"></p>
+
+        <div class="row-inline" id="sheet-row" hidden>
+          <label for="sheet-select">Sheet</label>
+          <select id="sheet-select"></select>
+        </div>
+        <label class="check">
+          <input type="checkbox" id="has-header" />
+          First row contains column names
+        </label>
+
+        <h3>Which columns hold the address?</h3>
+        <p class="hint">We guessed from your column names. Use <em>Address</em> for a full address (or the street part) and the other boxes for any separate town, state or ZIP columns. If your file already has latitude and longitude, pick those too.</p>
+        <div id="mapping" class="mapping-grid"></div>
+
+        <h3>Preview</h3>
+        <div class="table-scroll"><table id="preview" class="data-table"></table></div>
+
+        <div class="field">
+          <label for="area-hint">Town or ZIP to search in <span class="muted">(optional)</span></label>
+          <input id="area-hint" type="text" placeholder="e.g. Springfield, IL" autocomplete="off" />
+          <p class="hint">Added to any address that doesn't already include a town or ZIP code, so “12 Oak St” is looked up in the right place.</p>
+        </div>
+
+        <h3>Your walk</h3>
+        <div class="options-grid">
+          <div class="field">
+            <label for="start-mode">Start</label>
+            <select id="start-mode">
+              <option value="best">Wherever makes the shortest walk</option>
+              <option value="first">At the first address in my list</option>
+              <option value="address">At another address (e.g. where I park)</option>
+              <option value="here">At my current location</option>
+            </select>
+            <input id="start-address" type="text" placeholder="Starting address" hidden autocomplete="off" />
+          </div>
+          <div class="field">
+            <label for="finish-mode">Finish</label>
+            <select id="finish-mode">
+              <option value="open">Anywhere (one-way walk)</option>
+              <option value="loop">Back where I started</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="crossing-mode">Crossing the street</label>
+            <select id="crossing-mode">
+              <option value="free">Cross whenever it's shorter (zig-zag)</option>
+              <option value="avoid">Do one side of a street, then the other</option>
+            </select>
+          </div>
+        </div>
+
+        <details class="advanced">
+          <summary>More options</summary>
+          <div class="options-grid">
+            <div class="field">
+              <label for="provider">Address lookup service</label>
+              <select id="provider">
+                <option value="auto">Automatic (US Census for US addresses, then OpenStreetMap)</option>
+                <option value="census">US Census Bureau only (US addresses)</option>
+                <option value="osm">OpenStreetMap only (worldwide)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="check">
+                <input type="checkbox" id="use-network" />
+                Use real walking paths (beta)
+              </label>
+              <p class="hint">Measures distances along footpaths and streets instead of straight lines, so rivers and highways are taken into account. Slower; up to 200 stops.</p>
+            </div>
+          </div>
+        </details>
+
+        <p id="configure-error" class="error" role="alert" hidden></p>
+        <div class="actions">
+          <button id="sort-go" type="button" class="btn btn-primary btn-large">Sort into walking order</button>
+        </div>
+      </section>
+
+      <!-- Working -->
+      <section id="step-progress" class="card" aria-live="polite" hidden>
+        <h2>Working on it…</h2>
+        <p id="progress-text">Starting…</p>
+        <div class="progress"><div id="progress-bar" class="progress-bar"></div></div>
+        <p id="progress-detail" class="muted"></p>
+        <button id="cancel-go" type="button" class="btn btn-quiet">Cancel</button>
+      </section>
+
+      <!-- Results -->
+      <section id="step-results" aria-labelledby="results-title" hidden>
+        <div class="card">
+          <div class="card-head">
+            <h2 id="results-title"><span class="step-num">3</span> Your walking order</h2>
+            <div class="units-toggle" role="group" aria-label="Distance units">
+              <button type="button" data-units="imperial">mi</button>
+              <button type="button" data-units="metric">km</button>
+            </div>
+          </div>
+          <div id="summary" class="summary"></div>
+          <div class="actions no-print">
+            <button type="button" class="btn btn-primary" id="download-xlsx">Download Excel</button>
+            <button type="button" class="btn" id="download-csv">Download CSV</button>
+            <button type="button" class="btn" id="print-go">Print route sheet</button>
+            <button type="button" class="btn btn-quiet" data-action="back">Change options</button>
+            <button type="button" class="btn btn-quiet" data-action="restart">Start over</button>
+          </div>
+          <div id="update-bar" class="update-bar no-print" hidden>
+            <span>You moved or fixed some stops.</span>
+            <button type="button" class="btn btn-primary btn-small" id="reoptimize-go">Update the route</button>
+          </div>
+        </div>
+
+        <div id="attention" class="card attention no-print" hidden></div>
+
+        <div class="card map-card">
+          <div id="map" role="region" aria-label="Map of the route"></div>
+          <p id="map-help" class="hint no-print">Drag a numbered pin to correct its position, then press <em>Update the route</em>.</p>
+          <p id="map-unavailable" class="hint" hidden>The map couldn't be loaded (no internet connection?). Your sorted list is below.</p>
+        </div>
+
+        <div class="card nav-card no-print" id="nav-card" hidden>
+          <h3>Turn-by-turn directions</h3>
+          <p class="hint">Opens Google Maps walking directions, about 10 stops at a time.</p>
+          <div id="nav-links" class="nav-links"></div>
+        </div>
+
+        <div class="card">
+          <div class="table-scroll">
+            <table id="results-table" class="data-table results-table"></table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer wrap no-print">
+      <p>
+        Your spreadsheet never leaves your browser. Only the address text is sent to the
+        <a href="https://geocoding.geo.census.gov/" target="_blank" rel="noopener">US Census geocoder</a> and/or
+        <a href="https://nominatim.org/" target="_blank" rel="noopener">OpenStreetMap Nominatim</a> to find each location.
+        Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors.
+      </p>
+    </footer>
+
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+    <script src="assets/js/address.js"></script>
+    <script src="assets/js/geo.js"></script>
+    <script src="assets/js/optimizer.js"></script>
+    <script src="assets/js/planner.js"></script>
+    <script src="assets/js/geocoder.js"></script>
+    <script src="assets/js/walking.js"></script>
+    <script src="assets/js/sample.js"></script>
+    <script src="assets/js/app.js"></script>
+  </body>
+</html>
