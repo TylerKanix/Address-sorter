@@ -51,6 +51,12 @@ The app is a static website: just HTML, CSS and JavaScript, with no server and n
 
 **On your own computer:** double-click `index.html`. Hosting it is still recommended, because some lookup services expect requests to come from a real web address. You can also run `npm start` (or `python3 -m http.server 8000`) and open <http://localhost:8000>.
 
+## Claude artifact edition
+
+`artifact/` holds a single-file version that runs as a Claude artifact. Artifacts can't connect to outside services, so that version has no automatic address lookup and no street map. It sorts rows that already have latitude/longitude. For US addresses, it saves a file you upload to the free [US Census batch geocoder](https://geocoding.geo.census.gov/geocoder/locations/addressbatch?form), then reads back the results file the Census gives you.
+
+Build it with `node artifact/build.js` (writes `artifact/address-sorter.html`).
+
 ## Development
 
 ```

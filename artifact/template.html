@@ -1,0 +1,534 @@
+<title>Address Sorter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Public+Sans:wght@400;600;700;800&display=swap" />
+<style>
+  /* Layout: one narrow working column; three steps (add, check, walk) that hand off to each other. */
+  :root {
+    --bg: #eef2f0;
+    --surface: #ffffff;
+    --fg: #17201c;
+    --muted: #59665f;
+    --line: #d7dfdb;
+    --accent: #17765c;
+    --accent-strong: #105a46;
+    --accent-soft: #e0f0e9;
+    --on-accent: #ffffff;
+    --warn: #8f5c06;
+    --warn-soft: #fbefd6;
+    --bad: #ad2620;
+    --bad-soft: #fbe5e2;
+    --map-bg: #f5f8f6;
+    --map-grid: #e3e9e6;
+    --start: #17201c;
+    --font-body: 'Public Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-data: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --radius: 10px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --bg: #101513;
+      --surface: #19201d;
+      --fg: #e3ebe7;
+      --muted: #97a59f;
+      --line: #2b3632;
+      --accent: #47b994;
+      --accent-strong: #6dd0ae;
+      --accent-soft: #1b3a30;
+      --on-accent: #0c1411;
+      --warn: #e8b55b;
+      --warn-soft: #382c15;
+      --bad: #ff8f86;
+      --bad-soft: #3c201d;
+      --map-bg: #141a18;
+      --map-grid: #222b28;
+      --start: #e3ebe7;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme='dark'] {
+    --bg: #101513;
+    --surface: #19201d;
+    --fg: #e3ebe7;
+    --muted: #97a59f;
+    --line: #2b3632;
+    --accent: #47b994;
+    --accent-strong: #6dd0ae;
+    --accent-soft: #1b3a30;
+    --on-accent: #0c1411;
+    --warn: #e8b55b;
+    --warn-soft: #382c15;
+    --bad: #ff8f86;
+    --bad-soft: #3c201d;
+    --map-bg: #141a18;
+    --map-grid: #222b28;
+    --start: #e3ebe7;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font: 15px/1.55 var(--font-body);
+  }
+  a { color: var(--accent); }
+  .wrap {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 28px 16px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .masthead h1 {
+    margin: 0;
+    font-size: 1.9rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+  .masthead p { margin: 4px 0 0; color: var(--muted); max-width: 60ch; }
+  .masthead .route-mark {
+    display: inline-block;
+    width: 0.9em;
+    height: 0.9em;
+    margin-right: 0.6em;
+    vertical-align: -0.08em;
+    border-radius: 50%;
+    border: 0.17em solid var(--accent);
+    box-shadow: 0.42em 0.42em 0 -0.12em var(--accent);
+  }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 20px;
+    min-width: 0;
+  }
+  .panel h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .panel h3 { margin: 20px 0 6px; font-size: 1rem; }
+  .step {
+    font: 600 0.75rem/1 var(--font-data);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .muted { color: var(--muted); }
+  .hint { color: var(--muted); font-size: 0.9rem; margin: 4px 0 10px; max-width: 70ch; }
+  .error {
+    background: var(--bad-soft);
+    color: var(--bad);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin: 12px 0 0;
+  }
+  .status-line { font-size: 0.9rem; margin: 8px 0 0; }
+  .status-line.ok { color: var(--accent-strong); }
+  .status-line.bad { color: var(--bad); }
+
+  /* upload */
+  .dropzone {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 30px 16px;
+    margin-top: 12px;
+    border: 2px dashed var(--line);
+    border-radius: var(--radius);
+    text-align: center;
+    cursor: pointer;
+  }
+  .dropzone:hover, .dropzone.is-over, .dropzone:focus-within {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .dropzone input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+  .dropzone strong { font-size: 1.05rem; }
+  .dropzone small { color: var(--muted); }
+  .dropzone.compact { padding: 16px; margin-top: 6px; }
+  .link-like { color: var(--accent); text-decoration: underline; }
+  .upload-alt { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; margin-top: 12px; }
+  .upload-alt details { flex: 1 1 340px; min-width: 0; }
+  summary { cursor: pointer; color: var(--accent); padding: 4px 0; }
+
+  textarea, input[type='text'], select {
+    font: inherit;
+    color: inherit;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 7px 10px;
+    max-width: 100%;
+  }
+  textarea { width: 100%; resize: vertical; margin: 6px 0 8px; }
+  textarea:focus-visible, input:focus-visible, select:focus-visible, .btn:focus-visible, button:focus-visible, a:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .btn {
+    font: inherit;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--fg);
+    cursor: pointer;
+    text-decoration: none;
+    line-height: 1.3;
+  }
+  .btn:hover { border-color: var(--accent); }
+  .btn:disabled { opacity: 0.55; cursor: default; }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .btn-primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+  .btn-quiet { background: transparent; border-color: transparent; color: var(--accent); }
+  .btn-quiet:hover { background: var(--accent-soft); border-color: transparent; }
+  .btn-small { padding: 5px 10px; font-size: 0.88rem; }
+  .btn-large { padding: 12px 22px; font-size: 1.05rem; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; align-items: center; }
+
+  /* configure */
+  .check { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; margin-top: 4px; }
+  .check input { width: 18px; height: 18px; accent-color: var(--accent); }
+  .row-inline { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+  .mapping-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
+  .mapping-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    min-width: 0;
+  }
+  .mapping-item.is-set { border-color: var(--accent); background: var(--accent-soft); }
+  .mapping-item label { font-size: 0.8rem; font-weight: 600; }
+  .mapping-item select { width: 100%; }
+  .field { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; min-width: 0; }
+  .field > label { font-weight: 600; }
+  .field .hint { margin: 0; }
+  #area-hint { max-width: 420px; }
+  .options-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0 20px; }
+
+  .coords {
+    margin-top: 18px;
+    border-radius: var(--radius);
+    padding: 16px;
+    background: var(--warn-soft);
+  }
+  .coords.ready { background: var(--accent-soft); }
+  .coords h3 { margin: 0 0 6px; }
+  .coords ol { margin: 8px 0 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: 12px; }
+  .coords li { padding-left: 4px; }
+  .coords li p { margin: 2px 0 6px; }
+  .coords .fine { font-size: 0.88rem; color: var(--muted); margin: 12px 0 0; }
+
+  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; min-width: 0; }
+  .data-table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+  .data-table th, .data-table td {
+    text-align: left;
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  .data-table th { font-weight: 600; white-space: nowrap; }
+  #preview td, #preview th { white-space: nowrap; max-width: 240px; overflow: hidden; text-overflow: ellipsis; }
+  #preview .is-used { background: var(--accent-soft); }
+  #preview .use-col { font-weight: 600; white-space: normal; min-width: 220px; }
+
+  /* results */
+  .example-note {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+    border-radius: 8px;
+    background: var(--accent-soft);
+    font-size: 0.92rem;
+  }
+  .tag {
+    font: 600 0.72rem/1 var(--font-data);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 7px;
+    border-radius: 4px;
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+  .stats { display: flex; flex-wrap: wrap; gap: 10px 36px; margin: 6px 0 4px; }
+  .stat { display: flex; flex-direction: column; }
+  .stat-value { font: 600 1.65rem/1.2 var(--font-data); font-variant-numeric: tabular-nums; }
+  .stat-label { color: var(--muted); font-size: 0.82rem; }
+  .units-toggle { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .units-toggle button {
+    font: 600 0.85rem var(--font-data);
+    border: 0;
+    background: transparent;
+    color: var(--fg);
+    padding: 5px 12px;
+    cursor: pointer;
+  }
+  .units-toggle button.is-active { background: var(--accent); color: var(--on-accent); }
+  .save-status { font-size: 0.88rem; color: var(--muted); }
+
+  .attention h3:first-child { margin-top: 0; }
+  .attention-list { list-style: none; margin: 0; padding: 0; }
+  .attention-item {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 0;
+    border-top: 1px solid var(--line);
+  }
+  .attention-text { display: flex; flex-direction: column; min-width: 0; flex: 1 1 260px; }
+
+  .map-panel { padding: 0; overflow: hidden; }
+  .map-box { position: relative; background: var(--map-bg); }
+  #map-svg { display: block; width: 100%; height: 460px; touch-action: none; cursor: grab; user-select: none; }
+  #map-svg.dragging { cursor: grabbing; }
+  .map-controls { position: absolute; top: 10px; left: 10px; display: flex; flex-direction: column; gap: 4px; }
+  .map-controls button {
+    width: 32px;
+    height: 32px;
+    font: 600 1.05rem/1 var(--font-body);
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--fg);
+    cursor: pointer;
+  }
+  .map-caption {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 6px 16px;
+    padding: 10px 16px;
+    font-size: 0.85rem;
+    color: var(--muted);
+    border-top: 1px solid var(--line);
+  }
+  .route-line { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; opacity: 0.8; }
+  .route-return { stroke-dasharray: 6 6; }
+  .grid-line { stroke: var(--map-grid); stroke-width: 1; }
+  .pin circle { fill: var(--accent); stroke: var(--surface); stroke-width: 2; }
+  .pin text { fill: var(--on-accent); font: 600 10px var(--font-data); text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+  .pin.warn circle { fill: var(--warn); }
+  .pin.start circle { fill: var(--start); }
+  .pin.start text { fill: var(--surface); }
+  .pin.dot circle { stroke-width: 1; }
+  .pin { cursor: pointer; }
+  .pin.is-selected circle { stroke: var(--fg); stroke-width: 3; }
+  .scale-bar line { stroke: var(--fg); stroke-width: 2; }
+  .scale-bar text { fill: var(--fg); font: 600 11px var(--font-data); }
+
+  .nav-links { display: flex; flex-wrap: wrap; gap: 8px; }
+  .results-table .num { width: 3em; font: 600 0.92rem var(--font-data); color: var(--accent); font-variant-numeric: tabular-nums; }
+  .results-table .dist { white-space: nowrap; text-align: right; font-family: var(--font-data); font-size: 0.86rem; font-variant-numeric: tabular-nums; }
+  .results-table tbody tr[data-stop] { cursor: pointer; }
+  .results-table tbody tr[data-stop]:hover, .results-table tbody tr.is-selected { background: var(--accent-soft); }
+  .results-table .start-row td { color: var(--muted); font-style: italic; }
+  .results-table .section-head { padding-top: 18px; color: var(--bad); }
+  .results-table .missing td { color: var(--muted); }
+  .extra-inline { display: none; }
+  .badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 1px 7px;
+    border-radius: 999px;
+    white-space: nowrap;
+    vertical-align: 1px;
+  }
+  .badge-warn { background: var(--warn-soft); color: var(--warn); }
+  .badge-bad { background: var(--bad-soft); color: var(--bad); }
+
+  .site-footer { color: var(--muted); font-size: 0.84rem; max-width: 75ch; }
+
+  @media (max-width: 600px) {
+    .panel { padding: 16px; }
+    .masthead h1 { font-size: 1.5rem; }
+    #map-svg { height: 58vh; }
+    .stat-value { font-size: 1.35rem; }
+    .btn-large { width: 100%; }
+    .results-table .extra, .results-table .link-col { display: none; }
+    .extra-inline { display: block; font-size: 0.84rem; }
+    .data-table th, .data-table td { padding: 7px 6px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { scroll-behavior: auto !important; transition: none !important; }
+  }
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <h1><span class="route-mark" aria-hidden="true"></span>Address Sorter</h1>
+    <p>Upload a spreadsheet of addresses and get them back in the shortest walking order.</p>
+  </header>
+
+  <section id="step-upload" class="panel" aria-labelledby="upload-title">
+    <h2 id="upload-title"><span class="step">Step 1</span> Add your addresses</h2>
+    <label id="dropzone" class="dropzone" for="file-input">
+      <input id="file-input" type="file" accept=".xlsx,.xlsm,.xls,.ods,.csv,.tsv,.txt" />
+      <strong>Drop a spreadsheet here</strong>
+      <span>or <span class="link-like">choose a file</span></span>
+      <small>Excel (.xlsx, .xls), OpenDocument (.ods) or CSV</small>
+    </label>
+    <div class="upload-alt">
+      <details id="paste-panel">
+        <summary>…or paste addresses</summary>
+        <p class="hint">Copy the cells straight from your spreadsheet, including the header row.</p>
+        <textarea id="paste-input" rows="6" placeholder="Address&#9;City&#9;State&#9;ZIP&#10;123 Main St&#9;Springfield&#9;IL&#9;62701"></textarea>
+        <button id="paste-go" type="button" class="btn">Use these addresses</button>
+      </details>
+    </div>
+    <p id="upload-error" class="error" role="alert" hidden></p>
+  </section>
+
+  <section id="step-configure" class="panel" aria-labelledby="configure-title" hidden>
+    <div class="panel-head">
+      <h2 id="configure-title"><span class="step">Step 2</span> Check your data</h2>
+      <button type="button" class="btn btn-quiet btn-small" data-action="restart">Use a different file</button>
+    </div>
+    <p id="file-summary" class="muted"></p>
+    <div class="row-inline" id="sheet-row" hidden>
+      <label for="sheet-select">Sheet</label>
+      <select id="sheet-select"></select>
+    </div>
+    <label class="check"><input type="checkbox" id="has-header" /> First row contains column names</label>
+
+    <h3>Which columns hold the address?</h3>
+    <p class="hint">We guessed from your column names. Change any that are wrong.</p>
+    <div id="mapping" class="mapping-grid"></div>
+
+    <h3>Preview</h3>
+    <div class="table-scroll"><table id="preview" class="data-table"></table></div>
+
+    <div class="field">
+      <label for="area-hint">Town or ZIP <span class="muted">(only if your addresses leave it out)</span></label>
+      <input id="area-hint" type="text" placeholder="e.g. Springfield, IL 62701" autocomplete="off" />
+    </div>
+
+    <div id="coords-panel" class="coords"></div>
+
+    <h3>Your walk</h3>
+    <div class="options-grid">
+      <div class="field">
+        <label for="start-mode">Start</label>
+        <select id="start-mode">
+          <option value="best">Wherever makes the shortest walk</option>
+          <option value="first">At the first address in my list</option>
+          <option value="pick">At an address I choose</option>
+        </select>
+        <select id="start-stop" aria-label="Starting address" hidden></select>
+      </div>
+      <div class="field">
+        <label for="finish-mode">Finish</label>
+        <select id="finish-mode">
+          <option value="open">Anywhere (one-way walk)</option>
+          <option value="loop">Back where I started</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="crossing-mode">Crossing the street</label>
+        <select id="crossing-mode">
+          <option value="free">Cross whenever it's shorter</option>
+          <option value="avoid">Finish one side, then the other</option>
+        </select>
+      </div>
+    </div>
+
+    <p id="configure-error" class="error" role="alert" hidden></p>
+    <div class="actions">
+      <button id="sort-go" type="button" class="btn btn-primary btn-large">Sort into walking order</button>
+    </div>
+  </section>
+
+  <section id="step-results" aria-labelledby="results-title" hidden>
+    <div class="panel">
+      <div id="example-note" class="example-note" hidden>
+        <span class="tag">Example</span>
+        <span>18 places around the National Mall in Washington, DC, sorted into a walk. Add your own spreadsheet above to sort yours.</span>
+      </div>
+      <div class="panel-head">
+        <h2 id="results-title"><span class="step">Step 3</span> Your walking order</h2>
+        <div class="units-toggle" role="group" aria-label="Distance units">
+          <button type="button" data-units="imperial">mi</button>
+          <button type="button" data-units="metric">km</button>
+        </div>
+      </div>
+      <div id="summary"></div>
+      <div class="actions" id="result-actions">
+        <button type="button" class="btn btn-primary" id="download-xlsx" hidden>Download Excel</button>
+        <button type="button" class="btn" id="download-csv" hidden>Download CSV</button>
+        <button type="button" class="btn" id="copy-list">Copy list</button>
+        <button type="button" class="btn btn-quiet" data-action="back" id="back-go">Change options</button>
+        <button type="button" class="btn btn-quiet" data-action="restart" id="restart-go">Start over</button>
+        <span id="save-status" class="save-status" role="status"></span>
+      </div>
+    </div>
+
+    <div id="attention" class="panel attention" hidden></div>
+
+    <div class="panel map-panel">
+      <div class="map-box">
+        <svg id="map-svg" role="img" aria-label="Sketch of the walking route"></svg>
+        <div class="map-controls">
+          <button type="button" id="zoom-in" aria-label="Zoom in">+</button>
+          <button type="button" id="zoom-out" aria-label="Zoom out">−</button>
+          <button type="button" id="zoom-fit" aria-label="Show the whole route">⤢</button>
+        </div>
+      </div>
+      <div class="map-caption">
+        <span>Route sketch: stops and the order to walk them. Drag to move around; tap a stop to find it in the list.</span>
+        <span>No street map in this version</span>
+      </div>
+    </div>
+
+    <div class="panel" id="nav-panel" hidden>
+      <h3 style="margin-top: 0">Turn-by-turn directions</h3>
+      <p class="hint">Opens Google Maps walking directions, about 10 stops at a time.</p>
+      <div id="nav-links" class="nav-links"></div>
+    </div>
+
+    <div class="panel">
+      <div class="table-scroll"><table id="results-table" class="data-table results-table"></table></div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    Your spreadsheet stays in your browser. Routes are worked out on your device.
+    Need automatic address lookup and a street map? Use the
+    <a href="https://github.com/TylerKanix/Address-sorter" target="_blank" rel="noopener">full Address Sorter</a>.
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- MODULES -->

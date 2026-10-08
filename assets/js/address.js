@@ -42,7 +42,7 @@
 
   /** Parses CSV/TSV text into an array of rows (arrays of strings). */
   function parseDelimited(text, delimiter) {
-    text = String(text || '').replace(/^﻿/, '');
+    text = String(text || '').replace(/^\uFEFF/, '');
     const delim = delimiter === undefined ? detectDelimiter(text) : delimiter;
     const rows = [];
     let row = [];

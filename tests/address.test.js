@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const A = require('../assets/js/address.js');
 
 test('parses CSV with quotes, commas and blank lines', () => {
-  const rows = A.parseDelimited('﻿Name,Address\r\n"Smith, J","123 Main St, Apt 4"\r\n\r\nLee,"45 ""B"" Ave"\n');
+  const rows = A.parseDelimited('\uFEFFName,Address\r\n"Smith, J","123 Main St, Apt 4"\r\n\r\nLee,"45 ""B"" Ave"\n');
   assert.deepEqual(rows, [
     ['Name', 'Address'],
     ['Smith, J', '123 Main St, Apt 4'],

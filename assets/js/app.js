@@ -175,7 +175,7 @@
 
   function decodeText(buffer) {
     const utf8 = new TextDecoder('utf-8').decode(buffer);
-    if (!utf8.includes('�')) return utf8;
+    if (!utf8.includes('\uFFFD')) return utf8;
     try {
       return new TextDecoder('windows-1252').decode(buffer); // older Excel CSV exports
     } catch (e) {
@@ -1233,7 +1233,7 @@
     const csv = exportRows(false)
       .map((row) => row.map((c) => (/[",\n\r]/.test(c) ? '"' + String(c).replace(/"/g, '""') + '"' : c)).join(','))
       .join('\r\n');
-    downloadBlob(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }), exportName('csv'));
+    downloadBlob(new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' }), exportName('csv'));
   }
 
   function downloadXlsx() {
