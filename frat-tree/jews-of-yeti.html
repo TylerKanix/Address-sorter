@@ -569,6 +569,25 @@ dialog.editor::backdrop { background: rgba(4, 9, 18, .74); }
   text-align: center;
 }
 .ed-photo .eyebrow { color: var(--brass); letter-spacing: .18em; }
+.ed-photo { position: relative; transition: border-color .15s ease, background-color .15s ease; }
+.editor.is-file-drag .ed-photo { border-color: var(--brass-lo); }
+.ed-photo.is-over { border-style: solid; border-color: var(--brass-hi); background: var(--navy-3); }
+.ed-prev { cursor: pointer; }
+.hint strong { color: var(--cream); font-weight: 600; }
+.vh {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+.vh:focus-visible ~ .ed-btns .ed-pick { outline: 2px solid var(--focus); outline-offset: 2px; }
+.node.is-drop .plate { box-shadow: 0 2px 0 var(--brass-deep), 0 0 0 3px var(--focus), 0 0 30px var(--glow); }
+.pf-photo.is-drop { outline: 3px dashed var(--focus); outline-offset: 5px; }
 .ed-prev {
   display: grid;
   place-items: center;
@@ -726,26 +745,27 @@ dialog.editor::backdrop { background: rgba(4, 9, 18, .74); }
     </div>
     <div class="ed-body">
       <div class="ed-photos" id="ed-photos">
-        <div class="ed-photo">
+        <div class="ed-photo" id="ed-cover-zone">
           <p class="eyebrow">Tree photo</p>
-          <div class="ed-prev ed-prev-oval" id="ed-cover-prev"></div>
+          <label class="ed-prev ed-prev-oval" id="ed-cover-prev" for="ed-cover"></label>
+          <input type="file" id="ed-cover" class="vh" accept="image/*">
           <div class="ed-btns">
-            <button type="button" class="btn btn-small" id="ed-cover-pick">Choose photo</button>
+            <label class="btn btn-small ed-pick" id="ed-cover-pick" for="ed-cover">Choose photo</label>
             <button type="button" class="btn btn-small btn-quiet" id="ed-cover-clear" hidden>Remove</button>
           </div>
-          <input type="file" id="ed-cover" accept="image/*" hidden>
-          <p class="hint">Small headshot shown on the tree.</p>
+          <p class="hint"><strong>Drag a photo here</strong> or choose one. Small headshot shown on the tree.</p>
         </div>
-        <div class="ed-photo">
+        <div class="ed-photo" id="ed-full-zone">
           <p class="eyebrow">Full photo</p>
-          <div class="ed-prev ed-prev-full" id="ed-full-prev"></div>
+          <label class="ed-prev ed-prev-full" id="ed-full-prev" for="ed-full"></label>
+          <input type="file" id="ed-full" class="vh" accept="image/*">
           <div class="ed-btns">
-            <button type="button" class="btn btn-small" id="ed-full-pick">Choose photo</button>
+            <label class="btn btn-small ed-pick" id="ed-full-pick" for="ed-full">Choose photo</label>
             <button type="button" class="btn btn-small btn-quiet" id="ed-full-clear" hidden>Remove</button>
           </div>
-          <input type="file" id="ed-full" accept="image/*" hidden>
-          <p class="hint">Full-length shot shown when someone opens the bio.</p>
+          <p class="hint"><strong>Drag a photo here</strong> or choose one. Full-length shot shown in the bio.</p>
         </div>
+        <p class="hint span2">You can also copy a photo and paste it here (⌘V or Ctrl+V). It goes into the box you clicked last.</p>
       </div>
       <p class="ed-note" id="ed-nophotos" hidden>Only editors of this page can add photos. Everything else here you can fill in.</p>
       <div class="ed-grid">
@@ -1481,8 +1501,9 @@ dialog.editor::backdrop { background: rgba(4, 9, 18, .74); }
       id: p ? p.id : null,
       existing: p,
       saving: false,
-      cover: { mode: "keep", file: null, url: "", uploaded: "" },
-      full: { mode: "keep", file: null, url: "", uploaded: "" },
+      cover: { mode: "keep", blob: null, url: "", uploaded: "" },
+      full: { mode: "keep", blob: null, url: "", uploaded: "" },
+      lastZone: null,
     };
     $("ed-title").textContent = p ? `Edit ${p.first || "brother"}` : presetBig && t && t.byId.has(presetBig)
       ? `Add a little to ${t.byId.get(presetBig).first}` : "Add a brother";
@@ -1524,33 +1545,157 @@ dialog.editor::backdrop { background: rgba(4, 9, 18, .74); }
   function renderEdPhoto(kind) {
     const s = ed[kind];
     const had = ed.existing ? ed.existing[kind] : "";
-    const url = s.mode === "new" ? s.url : s.mode === "keep" ? store.photoUrl(had) : "";
     const prev = $(`ed-${kind}-prev`);
+    if (s.mode === "loading") {
+      prev.replaceChildren(el("span", { class: "ed-none", text: "Loading…" }));
+      $(`ed-${kind}-clear`).hidden = true;
+      return;
+    }
+    const url = s.mode === "new" ? s.url : s.mode === "keep" ? store.photoUrl(had) : "";
     if (url) {
       const img = el("img", { src: url, alt: "" });
-      img.addEventListener("error", () => prev.replaceChildren(el("span", { class: "ed-none", text: "No preview, still saves" })), { once: true });
+      img.addEventListener("error", () => prev.replaceChildren(el("span", { class: "ed-none", text: "Photo not found" })), { once: true });
       prev.replaceChildren(img);
     } else prev.replaceChildren(el("span", { class: "ed-none", text: "No photo" }));
     $(`ed-${kind}-clear`).hidden = !url;
     $(`ed-${kind}-pick`).textContent = url ? "Replace" : "Choose photo";
   }
 
+  // Photos arrive by file picker, drag and drop, or paste. Each is shrunk right away,
+  // so a photo the browser can't read (HEIC on most browsers) is caught before saving.
+  const MAX_UPLOAD = 20 * 1024 * 1024;
+  const FROM_WEB = "That picture came from a website. Save it to your computer first, then drag the saved file in.";
+  const isHeic = (f) => /^image\/hei[cf]/i.test(f.type) || /\.hei[cf]$/i.test(f.name || "");
+  const looksLikeImage = (f) => /^image\//.test(f.type) || /\.(jpe?g|png|gif|webp|hei[cf]|avif|bmp|tiff?)$/i.test(f.name || "");
+  const hasFiles = (e) => {
+    const types = e.dataTransfer ? Array.from(e.dataTransfer.types || []) : [];
+    return types.includes("Files") || types.includes("text/uri-list");
+  };
+  function firstFile(dt) {
+    const files = dt && dt.files ? Array.from(dt.files) : [];
+    return files.find(looksLikeImage) || files[0] || null;
+  }
+  const hasPhoto = (kind) => ed[kind].mode === "new" || (ed[kind].mode === "keep" && !!(ed.existing && ed.existing[kind]));
+
+  async function setPhoto(kind, file) {
+    if (!ed || ed.saving) return;
+    const session = ed;
+    ed.lastZone = kind;
+    $("ed-error").hidden = true;
+    if (!looksLikeImage(file)) return edError("That file isn't a photo. Use a JPG, PNG or WebP picture.");
+    if (ed[kind].url) URL.revokeObjectURL(ed[kind].url);
+    const slot = { mode: "loading", blob: null, url: "", uploaded: "" };
+    ed[kind] = slot;
+    renderEdPhoto(kind);
+    let blob = null, err = null;
+    try { blob = await shrink(file, kind === "cover" ? 520 : 1600); } catch (e) { err = e; }
+    if (ed !== session || ed[kind] !== slot) return;
+    if (!blob || blob.size > MAX_UPLOAD) {
+      ed[kind] = { mode: "keep", blob: null, url: "", uploaded: "" };
+      renderEdPhoto(kind);
+      return edError(blob ? errText({ code: "too_large" }) : isHeic(file)
+        ? "This photo is in Apple's HEIC format, which this browser can't read. Open it in Photos or Preview, export it as a JPEG, then drag that in."
+        : errText(err || { code: "unsupported_type" }));
+    }
+    ed[kind] = { mode: "new", blob, url: URL.createObjectURL(blob), uploaded: "" };
+    renderEdPhoto(kind);
+  }
+
   for (const kind of ["cover", "full"]) {
-    $(`ed-${kind}-pick`).addEventListener("click", () => $(`ed-${kind}`).click());
+    const zone = $(`ed-${kind}-zone`);
     $(`ed-${kind}`).addEventListener("change", (e) => {
       const f = e.target.files && e.target.files[0];
       e.target.value = "";
-      if (!f || !ed) return;
-      if (ed[kind].url) URL.revokeObjectURL(ed[kind].url);
-      ed[kind] = { mode: "new", file: f, url: URL.createObjectURL(f), uploaded: "" };
-      renderEdPhoto(kind);
+      if (f) setPhoto(kind, f);
     });
     $(`ed-${kind}-clear`).addEventListener("click", () => {
+      if (!ed) return;
       if (ed[kind].url) URL.revokeObjectURL(ed[kind].url);
-      ed[kind] = { mode: "clear", file: null, url: "", uploaded: "" };
+      ed[kind] = { mode: "clear", blob: null, url: "", uploaded: "" };
+      ed.lastZone = kind;
       renderEdPhoto(kind);
     });
+    zone.addEventListener("pointerdown", () => { if (ed) ed.lastZone = kind; });
+    zone.addEventListener("focusin", () => { if (ed) ed.lastZone = kind; });
+    zone.addEventListener("dragover", (e) => {
+      if (!hasFiles(e)) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "copy";
+      zone.classList.add("is-over");
+    });
+    zone.addEventListener("dragleave", (e) => {
+      if (!zone.contains(e.relatedTarget)) zone.classList.remove("is-over");
+    });
+    zone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      zone.classList.remove("is-over");
+      endFileDrag();
+      const f = firstFile(e.dataTransfer);
+      if (f) setPhoto(kind, f);
+      else edError(FROM_WEB);
+    });
   }
+
+  document.addEventListener("paste", (e) => {
+    if (!dialog.open || !ed || !state.canUpload) return;
+    const f = firstFile(e.clipboardData);
+    if (!f) return;
+    e.preventDefault();
+    const kind = ed.lastZone || (!hasPhoto("cover") ? "cover" : !hasPhoto("full") ? "full" : "cover");
+    setPhoto(kind, f);
+  });
+
+  // Outside the editor: a photo dropped on a brother becomes their tree photo, and one
+  // dropped on the open bio's picture becomes their full photo. Anywhere else, the drop
+  // is caught so the browser doesn't navigate away to the image.
+  let dragTimer = 0, dropEl = null, fileDrag = false;
+  function dropTargetFor(e) {
+    if (dialog.open || !state.canWrite || !state.canUpload) return null;
+    const t = e.target instanceof Element ? e.target : null;
+    if (!t) return null;
+    return t.closest(".node") || (state.selected ? t.closest("#pf-photo") : null);
+  }
+  function endFileDrag() {
+    clearTimeout(dragTimer);
+    fileDrag = false;
+    dialog.classList.remove("is-file-drag");
+    if (dropEl) dropEl.classList.remove("is-drop");
+    dropEl = null;
+  }
+  window.addEventListener("dragover", (e) => {
+    if (!hasFiles(e)) return;
+    e.preventDefault();
+    if (!fileDrag) {
+      fileDrag = true;
+      if (dialog.open) dialog.classList.add("is-file-drag");
+      else if (state.canWrite && state.canUpload) toast("Drop the photo on a brother to make it their tree photo.");
+      else if (state.canWrite) toast("Only editors of this page can add photos.");
+    }
+    const target = dropTargetFor(e);
+    if (target !== dropEl) {
+      if (dropEl) dropEl.classList.remove("is-drop");
+      dropEl = target;
+      if (dropEl) dropEl.classList.add("is-drop");
+    }
+    // A photo box in the editor has already allowed the drop; everywhere else only brothers do.
+    const inZone = e.target instanceof Element && e.target.closest(".ed-photo");
+    if (!inZone) e.dataTransfer.dropEffect = target ? "copy" : "none";
+    clearTimeout(dragTimer);
+    dragTimer = setTimeout(endFileDrag, 250);
+  });
+  window.addEventListener("drop", (e) => {
+    if (!hasFiles(e)) return;
+    e.preventDefault();
+    const target = dropTargetFor(e);
+    endFileDrag();
+    if (!target) return;
+    const f = firstFile(e.dataTransfer);
+    if (!f) return toast(FROM_WEB);
+    const onNode = target.classList.contains("node");
+    openEditor(onNode ? target.dataset.id : state.selected);
+    setPhoto(onNode ? "cover" : "full", f);
+  });
 
   function edError(msg, focusId) {
     const box = $("ed-error");
@@ -1567,6 +1712,7 @@ dialog.editor::backdrop { background: rgba(4, 9, 18, .74); }
     if (!first) return edError("Add a first name.", "ed-first");
     if (!last) return edError("Add a last name.", "ed-last");
     if (big === CHOOSE) return edError("Choose their big, or pick “No big” to start a new line.", "ed-big");
+    if (ed.cover.mode === "loading" || ed.full.mode === "loading") return edError("A photo is still loading. Save again in a moment.");
     $("ed-error").hidden = true;
 
     const p = ed.existing;
@@ -1582,8 +1728,7 @@ dialog.editor::backdrop { background: rgba(4, 9, 18, .74); }
         if (s.mode === "new") {
           if (!s.uploaded) {
             $("ed-status").textContent = "Uploading photos…";
-            const blob = await shrink(s.file, kind === "cover" ? 520 : 1600);
-            s.uploaded = await store.upload(blob);
+            s.uploaded = await store.upload(s.blob);
           }
           if (had) drop.push(had);
           photos[kind] = s.uploaded;

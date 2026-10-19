@@ -7,6 +7,7 @@
 - **Add brother** (or **Add a little** from someone's bio) adds a new person under their big. **Edit bio** changes any field, including both photos:
   - **Tree photo**: the small headshot shown on the tree.
   - **Full photo**: the full-length picture shown when the bio is opened.
+  - Add a photo by dragging it from Finder or the desktop onto either box, by pasting a copied photo (⌘V / Ctrl+V), or with **Choose photo**. A photo dropped straight onto a brother on the tree becomes their tree photo, and one dropped onto the open bio's picture becomes their full photo.
 - **Delete** removes a brother; their littles move up to the deleted brother's big.
 - Search by name or nickname, drag to move around, and zoom with the + / − / fit buttons (or Ctrl + scroll).
 
