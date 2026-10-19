@@ -1,0 +1,1712 @@
+<meta charset="utf-8">
+<title>Jews of Yeti</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Barlow+Semi+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: a one-screen app. Masthead over a pannable board of composite-style portraits on brass nameplates;
+   a brother's full bio opens in a drawer (a full-screen sheet on phones). One deliberate dark look: the family's navy and brass. */
+:root {
+  color-scheme: dark;
+  --navy-0: #08111f;
+  --navy-1: #0e1b31;
+  --navy-glow: #1a3159;
+  --navy-2: #13223b;
+  --navy-3: #1c3051;
+  --board: #0a1527b3;
+  --brass: #d3ae66;
+  --brass-hi: #f1d99f;
+  --brass-lo: #a8853f;
+  --brass-deep: #6f5426;
+  --brass-shine: #fff4d45c;
+  --engrave-line: #6f542699;
+  --wire: #9c8150;
+  --glow: #f1d99f80;
+  --cream: #eee6d3;
+  --mist: #9eabc0;
+  --mist-dim: #6f7c92;
+  --engrave: #1b2030;
+  --rule: #d3ae6633;
+  --shadow: #02060ecc;
+  --danger: #ec8f7c;
+  --danger-rule: #ec8f7c66;
+  --danger-bg: #ec8f7c14;
+  --focus: #f6e2ae;
+
+  --f-display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --f-plate: "Barlow Semi Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+[hidden] { display: none !important; }
+*, *::before, *::after { box-sizing: border-box; }
+html { height: 100%; }
+body {
+  height: 100%;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 10px;
+  overflow: hidden;
+  background: radial-gradient(120% 90% at 15% 0%, var(--navy-glow) 0%, var(--navy-1) 45%, var(--navy-0) 100%), var(--navy-0);
+  color: var(--cream);
+  font: 15px/1.5 var(--f-body);
+}
+button, input, select, textarea { font: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* ---------- Masthead ---------- */
+.mast {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 24px;
+  padding-block: 18px 14px;
+  border-bottom: 1px solid var(--rule);
+}
+.mast-title { min-width: 0; }
+.eyebrow {
+  margin: 0;
+  font: 600 12px/1 var(--f-plate);
+  letter-spacing: .24em;
+  text-transform: uppercase;
+  color: var(--mist);
+}
+h1 {
+  margin: 6px 0 0;
+  font: 800 clamp(32px, 5.6vw, 50px)/.92 var(--f-display);
+  letter-spacing: .035em;
+  text-transform: uppercase;
+  color: var(--brass-hi);
+  text-shadow: 0 2px 0 var(--brass-deep);
+  text-wrap: balance;
+}
+.tally {
+  margin: 8px 0 0;
+  font: 500 14px/1.3 var(--f-plate);
+  letter-spacing: .05em;
+  color: var(--mist);
+  font-variant-numeric: tabular-nums;
+}
+.mast-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.search { position: relative; }
+.search input {
+  width: 230px;
+  max-width: 100%;
+}
+.search-results {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: max(100%, 260px);
+  max-height: 320px;
+  overflow: auto;
+  z-index: 15;
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  background: var(--navy-2);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  box-shadow: 0 16px 40px var(--shadow);
+}
+.search-results button {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--cream);
+  text-align: left;
+  cursor: pointer;
+}
+.search-results button:hover, .search-results button:focus-visible { background: var(--navy-3); }
+.search-results small, .search-results .none {
+  font: 600 12px/1.4 var(--f-plate);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--mist);
+}
+.search-results .none { padding: 9px 10px; }
+
+/* ---------- Controls ---------- */
+.btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 10px 16px;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: var(--navy-3);
+  color: var(--cream);
+  font: 600 14px/1 var(--f-plate);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn:hover { border-color: var(--brass-lo); }
+.btn:disabled { opacity: .6; cursor: progress; }
+.btn-brass {
+  background: linear-gradient(180deg, var(--brass-hi), var(--brass) 55%, var(--brass-lo));
+  border-color: var(--brass-deep);
+  color: var(--engrave);
+  box-shadow: 0 1px 0 var(--brass-deep);
+  text-shadow: 0 1px 0 var(--brass-shine);
+}
+.btn-brass:hover { filter: brightness(1.06); border-color: var(--brass-deep); }
+.btn-quiet { background: transparent; }
+.btn-danger { color: var(--danger); border-color: var(--danger-rule); background: transparent; }
+.btn-danger.solid { background: var(--danger); color: var(--engrave); border-color: var(--danger); }
+.btn-small { min-height: 34px; padding: 8px 12px; font-size: 13px; }
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid var(--rule);
+  border-radius: 50%;
+  background: var(--navy-1);
+  color: var(--brass-hi);
+  cursor: pointer;
+}
+.icon-btn:hover { border-color: var(--brass-lo); }
+.icon-btn svg { width: 16px; height: 16px; }
+
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.field > span {
+  font: 600 12px/1.2 var(--f-plate);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--mist);
+}
+.field > span em { font-style: normal; color: var(--brass); }
+input[type="search"], input[type="text"], select, textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: var(--navy-1);
+  color: var(--cream);
+  font: 15px/1.4 var(--f-body);
+}
+textarea { resize: vertical; min-height: 120px; }
+::placeholder { color: var(--mist-dim); }
+
+/* ---------- Board ---------- */
+.board-wrap { position: relative; flex: 1; min-height: 0; margin-top: 12px; }
+.board {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  background: var(--board);
+  cursor: grab;
+}
+.board.is-dragging { cursor: grabbing; user-select: none; }
+.sizer { position: relative; margin: 0 auto; }
+.stage { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+#wires { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
+.wire { fill: none; stroke: var(--wire); stroke-width: 2; stroke-linecap: round; }
+.wire.lit { stroke: var(--brass-hi); stroke-width: 3; }
+.knot { fill: var(--wire); }
+.knot.lit { fill: var(--brass-hi); }
+
+.node {
+  position: absolute;
+  width: 168px;
+  height: 144px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: left .35s ease, top .35s ease, transform .15s ease, opacity .2s ease;
+}
+.node.d0 { width: 200px; height: 168px; }
+.node:hover { transform: translateY(-2px); }
+.node:focus-visible { outline: none; }
+.node.is-dim { opacity: .28; }
+
+.oval {
+  position: relative;
+  z-index: 0;
+  flex: none;
+  width: 76px;
+  height: 94px;
+  padding: 3px;
+  border-radius: 50%;
+  background: linear-gradient(160deg, var(--brass-hi), var(--brass-lo) 55%, var(--brass));
+  box-shadow: 0 6px 14px var(--shadow);
+}
+.oval img, .oval .mono {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: 50% 28%;
+  background: var(--navy-3);
+}
+.mono {
+  display: grid !important;
+  place-items: center;
+  font: 600 24px/1 var(--f-plate);
+  letter-spacing: .04em;
+  color: var(--brass);
+  background: radial-gradient(circle at 50% 30%, var(--navy-3), var(--navy-1)) !important;
+}
+.d0 .oval { width: 92px; height: 112px; }
+.d0 .mono { font-size: 30px; }
+
+.plate {
+  position: relative;
+  z-index: 1;
+  width: 160px;
+  height: 62px;
+  margin-top: -12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: 0 12px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, var(--brass-hi) 0%, var(--brass) 52%, var(--brass-lo) 100%);
+  box-shadow: 0 2px 0 var(--brass-deep), 0 10px 18px var(--shadow);
+  color: var(--engrave);
+  line-height: 1.12;
+  text-transform: uppercase;
+  text-shadow: 0 1px 0 var(--brass-shine);
+  white-space: nowrap;
+  transition: box-shadow .15s ease, filter .15s ease;
+}
+.plate::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border: 1px solid var(--engrave-line);
+  border-radius: 2px;
+  box-shadow: 0 1px 0 var(--brass-shine), inset 0 1px 0 var(--brass-shine);
+  pointer-events: none;
+}
+.plate span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.first { font: 500 12.5px/1.15 var(--f-plate); letter-spacing: .17em; }
+.last { font: 700 17px/1.1 var(--f-plate); letter-spacing: .04em; }
+.first.sm { font-size: 11px; letter-spacing: .1em; }
+.first.xs { font-size: 10px; letter-spacing: .05em; }
+.last.sm { font-size: 14.5px; letter-spacing: .02em; }
+.last.xs { font-size: 12px; letter-spacing: 0; }
+.d0 .plate { width: 196px; height: 70px; margin-top: -14px; }
+.d0 .first { font-size: 14px; }
+.d0 .last { font-size: 23px; }
+.d0 .last.sm { font-size: 18px; }
+.d0 .last.xs { font-size: 14px; }
+
+.node:hover .plate { filter: brightness(1.06); }
+.node:focus-visible .plate { box-shadow: 0 2px 0 var(--brass-deep), 0 0 0 3px var(--navy-0), 0 0 0 5px var(--focus); }
+.node.is-line .plate { box-shadow: 0 2px 0 var(--brass-deep), 0 0 0 2px var(--glow), 0 10px 18px var(--shadow); }
+.node.is-selected .plate { box-shadow: 0 2px 0 var(--brass-deep), 0 0 0 3px var(--focus), 0 0 30px var(--glow); }
+
+.board-msg {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  text-align: center;
+  pointer-events: none;
+}
+.board-msg > div { max-width: 38ch; pointer-events: auto; display: grid; justify-items: center; gap: 10px; }
+.board-msg h2 { margin: 0; font: 700 24px/1.1 var(--f-display); letter-spacing: .04em; text-transform: uppercase; color: var(--brass-hi); }
+.board-msg p { margin: 0; color: var(--mist); }
+
+.zoom {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  background: var(--navy-2);
+  box-shadow: 0 8px 20px var(--shadow);
+}
+.zoom button {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: var(--brass-hi);
+  font: 600 20px/1 var(--f-plate);
+  cursor: pointer;
+}
+.zoom button:hover { background: var(--navy-3); }
+.zoom svg { width: 16px; height: 16px; }
+
+.foot {
+  margin: 8px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  font: 500 13px/1.4 var(--f-plate);
+  letter-spacing: .03em;
+  color: var(--mist);
+}
+.foot .warn { color: var(--brass); }
+
+/* ---------- Profile drawer ---------- */
+.profile {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  width: min(440px, 100vw);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: calc(env(safe-area-inset-top, 0px) + 18px) max(22px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 28px) 22px;
+  border-left: 1px solid var(--rule);
+  background: var(--navy-2);
+  box-shadow: -18px 0 40px var(--shadow);
+  animation: drawer .22s ease-out;
+}
+@keyframes drawer { from { transform: translateX(28px); } to { transform: none; } }
+.pf-bar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: flex-end;
+  height: 0;
+  pointer-events: none;
+}
+.pf-bar .icon-btn { pointer-events: auto; box-shadow: 0 4px 12px var(--shadow); }
+.pf-photo {
+  width: fit-content;
+  max-width: calc(100% - 48px);
+  margin: 0 auto;
+  padding: 6px;
+  border-radius: 8px;
+  background: linear-gradient(160deg, var(--brass-hi), var(--brass-lo) 55%, var(--brass));
+  box-shadow: 0 12px 28px var(--shadow);
+}
+.pf-photo img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 62vh;
+  min-width: 160px;
+  object-fit: contain;
+  border-radius: 4px;
+  background: var(--navy-0);
+}
+.pf-photo figcaption {
+  padding-top: 6px;
+  text-align: center;
+  font: 600 11px/1.2 var(--f-plate);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--engrave);
+}
+.pf-empty {
+  width: 220px;
+  max-width: 100%;
+  aspect-ratio: 4 / 5;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 6px;
+  border-radius: 4px;
+  background: radial-gradient(circle at 50% 35%, var(--navy-3), var(--navy-0));
+}
+.pf-empty .pf-mono { font: 800 64px/1 var(--f-display); letter-spacing: .04em; color: var(--brass); }
+.pf-empty .pf-note { font: 600 11px/1.2 var(--f-plate); letter-spacing: .14em; text-transform: uppercase; color: var(--mist); }
+.pf-head { margin-top: 18px; text-align: center; }
+.pf-head h2 { margin: 6px 0 0; outline: none; }
+.pf-head .eyebrow { color: var(--brass); }
+.pf-first {
+  display: block;
+  font: 500 16px/1.2 var(--f-plate);
+  letter-spacing: .26em;
+  text-transform: uppercase;
+  color: var(--mist);
+}
+.pf-last {
+  display: block;
+  font: 800 clamp(34px, 9vw, 44px)/1 var(--f-display);
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  color: var(--brass-hi);
+  overflow-wrap: anywhere;
+}
+.pf-nick { margin: 6px 0 0; font: 500 17px/1.3 var(--f-body); color: var(--cream); }
+.pf-line {
+  margin-top: 18px;
+  padding-block: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  border-block: 1px solid var(--rule);
+  font: 600 13px/1.4 var(--f-plate);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.pf-line .lbl { color: var(--mist); margin-right: 4px; letter-spacing: .14em; font-size: 12px; }
+.pf-line .sep { color: var(--wire); }
+.pf-line .here { color: var(--cream); }
+.linkish {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--brass-hi);
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--brass-lo);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.linkish:hover { text-decoration-color: var(--brass-hi); }
+.pf-facts {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 10px 18px;
+  margin: 18px 0 0;
+}
+.pf-facts dt {
+  font: 600 12px/1.7 var(--f-plate);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--mist);
+}
+.pf-facts dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.pf-facts .muted { color: var(--mist); }
+.pf-bio { margin-top: 22px; }
+.pf-bio .eyebrow { margin-bottom: 10px; }
+.pf-bio p { margin: 0 0 .8em; max-width: 65ch; white-space: pre-line; overflow-wrap: anywhere; }
+.pf-bio .muted { color: var(--mist); }
+.pf-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--rule);
+}
+.pf-actions .btn-danger { margin-left: auto; }
+.pf-confirm {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid var(--danger-rule);
+  border-radius: 8px;
+  background: var(--danger-bg);
+}
+.pf-confirm p { margin: 0 0 12px; }
+.pf-confirm div { display: flex; flex-wrap: wrap; gap: 10px; }
+
+/* ---------- Editor ---------- */
+dialog.editor {
+  width: min(660px, calc(100vw - 32px));
+  max-height: calc(100% - 32px);
+  padding: 0;
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  background: var(--navy-2);
+  color: var(--cream);
+  box-shadow: 0 30px 80px var(--shadow);
+}
+dialog.editor::backdrop { background: rgba(4, 9, 18, .74); }
+.ed-form { display: flex; flex-direction: column; max-height: calc(100vh - 34px); }
+.ed-head, .ed-foot { display: flex; align-items: center; gap: 10px; padding: 16px 20px; }
+.ed-head { justify-content: space-between; border-bottom: 1px solid var(--rule); }
+.ed-head h2 { margin: 0; font: 800 26px/1 var(--f-display); letter-spacing: .03em; text-transform: uppercase; color: var(--brass-hi); }
+.ed-body { display: grid; gap: 18px; padding: 18px 20px; overflow-y: auto; }
+.ed-foot { justify-content: flex-end; border-top: 1px solid var(--rule); }
+.ed-photos { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.ed-photo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 10px;
+  border: 1px dashed var(--rule);
+  border-radius: 10px;
+  text-align: center;
+}
+.ed-photo .eyebrow { color: var(--brass); letter-spacing: .18em; }
+.ed-prev {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: var(--navy-1);
+  border: 2px solid var(--brass-lo);
+}
+.ed-prev img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 28%; }
+.ed-prev-oval { width: 80px; height: 100px; border-radius: 50%; }
+.ed-prev-full { width: 90px; height: 120px; border-radius: 6px; }
+.ed-prev-full img { object-fit: contain; }
+.ed-none { padding: 6px; font: 600 11px/1.2 var(--f-plate); letter-spacing: .1em; text-transform: uppercase; color: var(--mist-dim); }
+.ed-btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.hint { margin: 0; font-size: 13px; line-height: 1.35; color: var(--mist); }
+.ed-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; }
+.span2 { grid-column: 1 / -1; }
+.ed-note { margin: 0; padding: 10px 12px; border: 1px solid var(--rule); border-radius: 8px; color: var(--mist); }
+.ed-error { margin: 0; padding: 10px 12px; border: 1px solid var(--danger-rule); border-radius: 8px; background: var(--danger-bg); color: var(--danger); }
+.ed-status { margin-right: auto; font: 600 13px/1.2 var(--f-plate); letter-spacing: .06em; color: var(--mist); }
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
+  z-index: 40;
+  max-width: calc(100vw - 32px);
+  transform: translateX(-50%);
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: var(--cream);
+  color: var(--engrave);
+  font: 600 14px/1.3 var(--f-plate);
+  letter-spacing: .03em;
+  box-shadow: 0 10px 30px var(--shadow);
+}
+
+@media (max-width: 640px) {
+  .mast { padding-block: 14px 12px; }
+  .mast-tools { width: 100%; justify-content: stretch; }
+  .search { flex: 1; min-width: 0; }
+  .search input { width: 100%; }
+  .profile {
+    width: 100vw;
+    border-left: 0;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  dialog.editor {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100%;
+    max-height: 100%;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+  }
+  .ed-form { height: 100%; max-height: 100%; }
+  .ed-head { padding-top: calc(env(safe-area-inset-top, 0px) + 14px); }
+  .ed-foot { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 14px); }
+  .ed-head, .ed-body, .ed-foot {
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .ed-grid { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}
+</style>
+
+<header class="mast">
+  <div class="mast-title">
+    <p class="eyebrow">Family tree</p>
+    <h1>Jews of Yeti</h1>
+    <p class="tally" id="tally">Loading the tree…</p>
+  </div>
+  <div class="mast-tools">
+    <div class="search">
+      <input type="search" id="search" placeholder="Find a brother" autocomplete="off" aria-label="Find a brother" aria-controls="search-results">
+      <ul class="search-results" id="search-results" hidden></ul>
+    </div>
+    <button type="button" class="btn btn-brass" id="add-btn" hidden>Add brother</button>
+  </div>
+</header>
+
+<div class="board-wrap">
+  <main class="board" id="board" aria-label="Family tree">
+    <div class="sizer" id="sizer">
+      <div class="stage" id="stage">
+        <svg id="wires" aria-hidden="true"></svg>
+        <div id="nodes"></div>
+      </div>
+    </div>
+  </main>
+  <div class="board-msg" id="board-msg">
+    <div>
+      <h2 id="msg-title">Loading the tree…</h2>
+      <p id="msg-body"></p>
+      <button type="button" class="btn btn-brass" id="msg-add" hidden>Add the first brother</button>
+    </div>
+  </div>
+  <div class="zoom" id="zoom" hidden>
+    <button type="button" id="zoom-in" aria-label="Zoom in">+</button>
+    <button type="button" id="zoom-out" aria-label="Zoom out">−</button>
+    <button type="button" id="zoom-fit" aria-label="Fit the whole tree">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M1.5 5.5v-4h4M10.5 1.5h4v4M14.5 10.5v4h-4M5.5 14.5h-4v-4"/></svg>
+    </button>
+  </div>
+</div>
+
+<p class="foot">
+  <span>Tap or click a brother to open their bio. Drag to move around the tree.</span>
+  <span class="warn" id="mode-note" hidden>Offline copy: changes save in this browser only.</span>
+</p>
+
+<aside class="profile" id="profile" aria-labelledby="pf-heading" hidden>
+  <div class="pf-bar">
+    <button type="button" class="icon-btn" id="pf-close" aria-label="Close bio">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 3l10 10M13 3L3 13"/></svg>
+    </button>
+  </div>
+  <figure class="pf-photo" id="pf-photo"></figure>
+  <header class="pf-head">
+    <p class="eyebrow" id="pf-gen"></p>
+    <h2 id="pf-heading" tabindex="-1"><span class="pf-first" id="pf-first"></span><span class="pf-last" id="pf-last"></span></h2>
+    <p class="pf-nick" id="pf-nick" hidden></p>
+  </header>
+  <nav class="pf-line" id="pf-line" aria-label="Line from the top of the tree"></nav>
+  <dl class="pf-facts" id="pf-facts"></dl>
+  <section class="pf-bio">
+    <p class="eyebrow">Bio</p>
+    <div id="pf-bio"></div>
+  </section>
+  <div class="pf-actions" id="pf-actions" hidden>
+    <button type="button" class="btn btn-brass" id="pf-edit">Edit bio</button>
+    <button type="button" class="btn" id="pf-add-little">Add a little</button>
+    <button type="button" class="btn btn-danger" id="pf-delete">Delete</button>
+  </div>
+  <div class="pf-confirm" id="pf-confirm" role="alert" hidden>
+    <p id="pf-confirm-text"></p>
+    <div>
+      <button type="button" class="btn btn-danger solid" id="pf-confirm-yes">Delete from tree</button>
+      <button type="button" class="btn btn-quiet" id="pf-confirm-no">Keep</button>
+    </div>
+  </div>
+</aside>
+
+<dialog class="editor" id="editor" aria-labelledby="ed-title">
+  <form class="ed-form" id="ed-form" novalidate>
+    <div class="ed-head">
+      <h2 id="ed-title">Add a brother</h2>
+      <button type="button" class="icon-btn" id="ed-close" aria-label="Close without saving">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 3l10 10M13 3L3 13"/></svg>
+      </button>
+    </div>
+    <div class="ed-body">
+      <div class="ed-photos" id="ed-photos">
+        <div class="ed-photo">
+          <p class="eyebrow">Tree photo</p>
+          <div class="ed-prev ed-prev-oval" id="ed-cover-prev"></div>
+          <div class="ed-btns">
+            <button type="button" class="btn btn-small" id="ed-cover-pick">Choose photo</button>
+            <button type="button" class="btn btn-small btn-quiet" id="ed-cover-clear" hidden>Remove</button>
+          </div>
+          <input type="file" id="ed-cover" accept="image/*" hidden>
+          <p class="hint">Small headshot shown on the tree.</p>
+        </div>
+        <div class="ed-photo">
+          <p class="eyebrow">Full photo</p>
+          <div class="ed-prev ed-prev-full" id="ed-full-prev"></div>
+          <div class="ed-btns">
+            <button type="button" class="btn btn-small" id="ed-full-pick">Choose photo</button>
+            <button type="button" class="btn btn-small btn-quiet" id="ed-full-clear" hidden>Remove</button>
+          </div>
+          <input type="file" id="ed-full" accept="image/*" hidden>
+          <p class="hint">Full-length shot shown when someone opens the bio.</p>
+        </div>
+      </div>
+      <p class="ed-note" id="ed-nophotos" hidden>Only editors of this page can add photos. Everything else here you can fill in.</p>
+      <div class="ed-grid">
+        <label class="field"><span>First name <em>*</em></span><input type="text" id="ed-first" maxlength="40" autocomplete="off"></label>
+        <label class="field"><span>Last name <em>*</em></span><input type="text" id="ed-last" maxlength="40" autocomplete="off"></label>
+        <label class="field"><span>Nickname</span><input type="text" id="ed-nick" maxlength="60" autocomplete="off"></label>
+        <label class="field"><span>Big</span><select id="ed-big"></select></label>
+        <label class="field"><span>Pledge class</span><input type="text" id="ed-pledge" maxlength="40" placeholder="Fall 2024" autocomplete="off"></label>
+        <label class="field"><span>Graduation year</span><input type="text" id="ed-grad" maxlength="12" inputmode="numeric" placeholder="2027" autocomplete="off"></label>
+        <label class="field"><span>Major</span><input type="text" id="ed-major" maxlength="80" autocomplete="off"></label>
+        <label class="field"><span>Hometown</span><input type="text" id="ed-home" maxlength="80" autocomplete="off"></label>
+        <label class="field span2"><span>Positions held</span><input type="text" id="ed-pos" maxlength="160" placeholder="Rush chair, Treasurer" autocomplete="off"></label>
+        <label class="field span2"><span>Bio</span><textarea id="ed-bio" rows="5" maxlength="4000" placeholder="Where they're from, what they're known for, best stories…"></textarea></label>
+      </div>
+      <p class="ed-error" id="ed-error" role="alert" hidden></p>
+    </div>
+    <div class="ed-foot">
+      <span class="ed-status" id="ed-status" aria-live="polite"></span>
+      <button type="button" class="btn btn-quiet" id="ed-cancel">Cancel</button>
+      <button type="submit" class="btn btn-brass" id="ed-save">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+(() => {
+  "use strict";
+
+  const $ = (id) => document.getElementById(id);
+  const SVG_NS = "http://www.w3.org/2000/svg";
+  const reduceMotion = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  function el(tag, attrs, ...kids) {
+    const n = document.createElement(tag);
+    if (attrs) {
+      for (const [k, v] of Object.entries(attrs)) {
+        if (v == null || v === false) continue;
+        if (k === "class") n.className = v;
+        else if (k === "text") n.textContent = v;
+        else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+        else n.setAttribute(k, v === true ? "" : v);
+      }
+    }
+    for (const kid of kids.flat()) if (kid != null && kid !== false) n.append(kid);
+    return n;
+  }
+  function svg(tag, attrs) {
+    const n = document.createElementNS(SVG_NS, tag);
+    for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+    return n;
+  }
+
+  // Tree geometry. NODE and HEAD sizes must match the .node / .d0 CSS.
+  const SLOT = 192, PAD_X = 36, PAD_Y = 28, GAP = 60;
+  const NODE = { w: 168, h: 144 }, HEAD = { w: 200, h: 168 };
+  const dims = (d) => (d === 0 ? HEAD : NODE);
+  const rowTop = (d) => PAD_Y + (d === 0 ? 0 : HEAD.h + GAP + (d - 1) * (NODE.h + GAP));
+  const colX = (x) => PAD_X + x * SLOT + SLOT / 2;
+
+  const FIELDS = ["first", "last", "nickname", "big", "pledgeClass", "gradYear", "major", "hometown", "positions", "bio", "cover", "full"];
+  const CHOOSE = "__choose__";
+
+  const state = {
+    mode: "loading", // loading | cloud | local | none
+    canWrite: false,
+    canUpload: false,
+    people: [],
+    tree: null,
+    selected: null,
+    confirmDelete: null,
+    query: "",
+    zoom: 1,
+    W: 0,
+    H: 0,
+    placed: false,
+    pendingCenter: null,
+  };
+
+  // ---------- Storage: the artifact's shared db + assets, or this browser when opened as a plain file ----------
+  const store = {
+    cloud: null,
+    local: null,
+    newId() {
+      if (this.cloud) return this.cloud.col.doc().id;
+      return "b" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    },
+    photoUrl(id) {
+      if (!id || typeof id !== "string") return "";
+      if (this.cloud) return /^[A-Za-z0-9_-]{8,128}$/.test(id) ? "/_blob/" + id : "";
+      return (this.local && this.local.urls.get(id)) || "";
+    },
+    async save(id, data) {
+      if (this.cloud) return dbWrite(() => this.cloud.col.doc(id).set(data));
+      this.local.people[id] = data;
+      persistLocal();
+      emitLocal();
+    },
+    async patch(id, data) {
+      if (this.cloud) return dbWrite(() => this.cloud.col.doc(id).update(data));
+      if (this.local.people[id]) Object.assign(this.local.people[id], data);
+      persistLocal();
+      emitLocal();
+    },
+    async remove(id) {
+      if (this.cloud) return dbWrite(() => this.cloud.col.doc(id).delete());
+      delete this.local.people[id];
+      persistLocal();
+      emitLocal();
+    },
+    async upload(blob) {
+      if (this.cloud) {
+        if (!this.cloud.assets) throw { code: "not_granted" };
+        const res = await this.cloud.assets.upload(blob, blob.type ? { type: blob.type } : undefined);
+        return res.id;
+      }
+      const id = "ph" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+      if (this.local.idb) await idbPut(this.local.idb, id, blob).catch(() => {});
+      this.local.urls.set(id, URL.createObjectURL(blob));
+      return id;
+    },
+    dropPhoto(id) {
+      if (!id) return;
+      if (this.cloud) {
+        if (this.cloud.assets) this.cloud.assets.delete(id).catch(() => {});
+        return;
+      }
+      const url = this.local.urls.get(id);
+      if (url) URL.revokeObjectURL(url);
+      this.local.urls.delete(id);
+      if (this.local.idb) idbDelete(this.local.idb, id).catch(() => {});
+    },
+  };
+
+  async function dbWrite(fn) {
+    try {
+      try {
+        return await fn();
+      } catch (e) {
+        if (e && e.code === "unavailable") {
+          await sleep(500 + Math.random() * 700);
+          return await fn();
+        }
+        throw e;
+      }
+    } catch (e) {
+      throw { code: (e && e.code) || "unavailable", where: "db" };
+    }
+  }
+
+  async function connect() {
+    const c = window.claude;
+    if (!c || typeof c.use !== "function") return startLocal();
+    const dbP = c.use("db").catch(() => null);
+    const assetsP = c.use("assets").catch(() => null);
+    const userP = c.use("user").catch(() => null);
+    const db = await dbP;
+    if (!db) {
+      state.mode = "none";
+      render();
+      return;
+    }
+    store.cloud = { db, assets: null, col: db.collection("people") };
+    state.mode = "cloud";
+    render();
+    store.cloud.col.onSnapshot(
+      (snap) => setPeople(snap.docs.filter((d) => d.exists).map((d) => ({ ...d.data(), id: d.id }))),
+      () => {
+        state.canWrite = false;
+        toast("The tree stopped syncing. Reload the page to see the latest changes.");
+        render();
+      }
+    );
+    assetsP.then((a) => {
+      store.cloud.assets = a;
+      state.canUpload = !!a;
+      render();
+    });
+    userP.then(async (u) => {
+      let can = null;
+      try { can = u ? await u.can("data.write") : null; } catch (e) { can = null; }
+      state.canWrite = can !== false;
+      render();
+    });
+  }
+
+  // Offline copy (the file opened outside claude.ai): people in localStorage, photos in IndexedDB.
+  const LS_KEY = "jews-of-yeti/people/v1";
+  async function startLocal() {
+    state.mode = "local";
+    state.canWrite = true;
+    state.canUpload = true;
+    let people = {};
+    try { people = JSON.parse(localStorage.getItem(LS_KEY) || "{}") || {}; } catch (e) { people = {}; }
+    store.local = { people, urls: new Map(), idb: null };
+    try {
+      store.local.idb = await idbOpen();
+      for (const [k, blob] of await idbAll(store.local.idb)) store.local.urls.set(k, URL.createObjectURL(blob));
+    } catch (e) { store.local.idb = null; }
+    $("mode-note").hidden = false;
+    emitLocal();
+  }
+  function emitLocal() {
+    setPeople(Object.entries(store.local.people).map(([id, d]) => ({ ...d, id })));
+  }
+  function persistLocal() {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(store.local.people)); }
+    catch (e) { toast("This browser blocked saving, so changes last only until you close the page."); }
+  }
+  function idbOpen() {
+    return new Promise((res, rej) => {
+      const r = indexedDB.open("jews-of-yeti", 1);
+      r.onupgradeneeded = () => r.result.createObjectStore("photos");
+      r.onsuccess = () => res(r.result);
+      r.onerror = () => rej(r.error);
+    });
+  }
+  function idbAll(db) {
+    return new Promise((res, rej) => {
+      const out = [];
+      const tx = db.transaction("photos");
+      const cur = tx.objectStore("photos").openCursor();
+      cur.onsuccess = () => { const c = cur.result; if (c) { out.push([c.key, c.value]); c.continue(); } };
+      tx.oncomplete = () => res(out);
+      tx.onerror = () => rej(tx.error);
+    });
+  }
+  function idbRun(db, fn) {
+    return new Promise((res, rej) => {
+      const tx = db.transaction("photos", "readwrite");
+      fn(tx.objectStore("photos"));
+      tx.oncomplete = () => res();
+      tx.onerror = () => rej(tx.error);
+    });
+  }
+  const idbPut = (db, id, blob) => idbRun(db, (s) => s.put(blob, id));
+  const idbDelete = (db, id) => idbRun(db, (s) => s.delete(id));
+
+  // ---------- Model ----------
+  function clean(raw) {
+    const p = { id: String(raw.id) };
+    for (const f of FIELDS) {
+      const v = raw[f];
+      p[f] = typeof v === "string" ? v.trim() : typeof v === "number" ? String(v) : "";
+    }
+    p.order = Number.isFinite(raw.order) ? raw.order : 0;
+    return p;
+  }
+  const fullName = (p) => `${p.first} ${p.last}`.trim() || "Unnamed brother";
+  const initials = (p) => ((p.first[0] || "") + (p.last[0] || "")).toUpperCase() || "?";
+  const byName = (a, b) => fullName(a).localeCompare(fullName(b));
+  const bySibling = (a, b) => a.order - b.order || byName(a, b);
+
+  function setPeople(list) {
+    state.people = list.map(clean);
+    state.tree = layout(state.people);
+    if (state.selected && !state.tree.byId.has(state.selected)) state.selected = null;
+    render();
+  }
+
+  // Tidy tree: leaves take the next free column, each big sits centred over their littles.
+  function layout(people) {
+    const byId = new Map(people.map((p) => [p.id, p]));
+    const kidsOf = new Map();
+    const roots = [];
+    for (const p of people) {
+      if (p.big && p.big !== p.id && byId.has(p.big)) {
+        if (!kidsOf.has(p.big)) kidsOf.set(p.big, []);
+        kidsOf.get(p.big).push(p);
+      } else roots.push(p);
+    }
+    for (const list of kidsOf.values()) list.sort(bySibling);
+    roots.sort(bySibling);
+
+    const pos = new Map(), parentOf = new Map(), seen = new Set();
+    let slot = 0, maxDepth = 0;
+    function place(p, depth) {
+      seen.add(p.id);
+      maxDepth = Math.max(maxDepth, depth);
+      const kids = [];
+      const xs = [];
+      for (const k of kidsOf.get(p.id) || []) {
+        if (seen.has(k.id)) continue;
+        parentOf.set(k.id, p.id);
+        kids.push(k.id);
+        xs.push(place(k, depth + 1));
+      }
+      const x = xs.length ? (xs[0] + xs[xs.length - 1]) / 2 : slot++;
+      pos.set(p.id, { x, depth, kids });
+      return x;
+    }
+    roots.forEach((r, i) => { if (i) slot += 0.5; place(r, 0); });
+    // Anyone caught in a loop of bigs never hangs off a root; give them their own line.
+    for (const p of people) {
+      if (!seen.has(p.id)) { if (slot) slot += 0.5; roots.push(p); place(p, 0); }
+    }
+    return { byId, pos, parentOf, roots, slots: slot, maxDepth };
+  }
+
+  function ancestors(id) {
+    const t = state.tree, out = [];
+    let cur = id;
+    while (cur && t.byId.has(cur) && !out.includes(cur)) { out.unshift(cur); cur = t.parentOf.get(cur); }
+    return out;
+  }
+  function descendants(id) {
+    const t = state.tree, out = new Set(), stack = [...(t.pos.get(id)?.kids || [])];
+    while (stack.length) {
+      const k = stack.pop();
+      if (out.has(k)) continue;
+      out.add(k);
+      stack.push(...(t.pos.get(k)?.kids || []));
+    }
+    return out;
+  }
+  const matches = (p, q) => `${p.first} ${p.last} ${p.nickname}`.toLowerCase().includes(q);
+
+  // ---------- Render ----------
+  function render() {
+    renderTally();
+    renderBoard();
+    renderProfile();
+    $("add-btn").hidden = !(state.canWrite && (state.mode === "cloud" || state.mode === "local"));
+  }
+
+  function renderTally() {
+    const t = state.tree, n = t ? t.byId.size : 0;
+    let s;
+    if (state.mode === "loading" || (state.mode === "cloud" && !t)) s = "Loading the tree…";
+    else if (state.mode === "none") s = "Not available in this view";
+    else if (!n) s = "No brothers yet";
+    else {
+      const g = t.maxDepth + 1;
+      s = `${n} ${n === 1 ? "brother" : "brothers"} · ${g} ${g === 1 ? "generation" : "generations"}`;
+      if (t.roots.length > 1) s += ` · ${t.roots.length} lines`;
+    }
+    $("tally").textContent = s;
+  }
+
+  const nodeEls = new Map();
+
+  function renderBoard() {
+    const t = state.tree;
+    const empty = !t || !t.byId.size;
+    $("zoom").hidden = empty;
+    $("board-msg").hidden = !empty;
+    if (empty) {
+      for (const rec of nodeEls.values()) rec.btn.remove();
+      nodeEls.clear();
+      $("wires").replaceChildren();
+      $("sizer").style.width = $("sizer").style.height = "0px";
+      renderBoardMsg();
+      return;
+    }
+
+    const lineage = new Set(state.selected ? ancestors(state.selected) : []);
+    const q = state.query;
+    const host = $("nodes");
+    const live = new Set();
+    for (const [id, P] of t.pos) {
+      const p = t.byId.get(id);
+      const d = dims(P.depth);
+      const sig = [p.first, p.last, p.cover, P.depth === 0].join("\u0001");
+      let rec = nodeEls.get(id);
+      if (!rec || rec.sig !== sig) {
+        const btn = el("button", { type: "button", "data-id": id }, portrait(p), plate(p));
+        if (rec) rec.btn.replaceWith(btn); else host.append(btn);
+        rec = { btn, sig };
+        nodeEls.set(id, rec);
+      }
+      live.add(id);
+      const b = rec.btn;
+      b.className = "node" + (P.depth === 0 ? " d0" : "") +
+        (id === state.selected ? " is-selected" : lineage.has(id) ? " is-line" : "") +
+        (q && !matches(p, q) ? " is-dim" : "");
+      b.style.left = colX(P.x) - d.w / 2 + "px";
+      b.style.top = rowTop(P.depth) + "px";
+      if (id === state.selected) b.setAttribute("aria-current", "true"); else b.removeAttribute("aria-current");
+    }
+    for (const [id, rec] of nodeEls) if (!live.has(id)) { rec.btn.remove(); nodeEls.delete(id); }
+
+    // Connectors: a stem from the big, a crossbar with a knot, then a drop to each little.
+    const wires = [], knots = [];
+    for (const [, P] of t.pos) {
+      if (!P.kids.length) continue;
+      const px = colX(P.x), y0 = rowTop(P.depth) + dims(P.depth).h, mid = y0 + GAP / 2;
+      let anyLit = false;
+      for (const kid of P.kids) {
+        const K = t.pos.get(kid), kx = colX(K.x), ky = rowTop(K.depth), dx = kx - px;
+        const lit = lineage.has(kid);
+        anyLit = anyLit || lit;
+        let d;
+        if (Math.abs(dx) < 1) d = `M${px} ${mid}V${ky}`;
+        else {
+          const s = Math.sign(dx), r = Math.min(12, Math.abs(dx));
+          d = `M${px} ${mid}H${kx - s * r}Q${kx} ${mid} ${kx} ${mid + r}V${ky}`;
+        }
+        wires.push({ d, lit });
+      }
+      wires.push({ d: `M${px} ${y0}V${mid}`, lit: anyLit });
+      if (P.kids.length > 1) knots.push({ x: px, y: mid, lit: anyLit });
+    }
+    wires.sort((a, b) => a.lit - b.lit);
+    state.W = Math.ceil(PAD_X * 2 + Math.max(t.slots, 1) * SLOT);
+    state.H = Math.ceil(rowTop(t.maxDepth) + dims(t.maxDepth).h + PAD_Y);
+    const w = $("wires");
+    w.setAttribute("width", state.W);
+    w.setAttribute("height", state.H);
+    w.setAttribute("viewBox", `0 0 ${state.W} ${state.H}`);
+    w.replaceChildren(
+      ...wires.map((x) => svg("path", { d: x.d, class: "wire" + (x.lit ? " lit" : "") })),
+      ...knots.map((k) => svg("circle", { cx: k.x, cy: k.y, r: 4.5, class: "knot" + (k.lit ? " lit" : "") }))
+    );
+    applyZoom();
+
+    if (!state.placed) {
+      state.placed = true;
+      requestAnimationFrame(initialView);
+    } else if (state.pendingCenter && t.pos.has(state.pendingCenter)) {
+      const id = state.pendingCenter;
+      state.pendingCenter = null;
+      requestAnimationFrame(() => centerOn(id));
+    }
+  }
+
+  function renderBoardMsg() {
+    const title = $("msg-title"), body = $("msg-body"), add = $("msg-add");
+    add.hidden = true;
+    if (state.mode === "loading" || (state.mode === "cloud" && !state.tree)) {
+      title.textContent = "Loading the tree…";
+      body.textContent = "";
+    } else if (state.mode === "none") {
+      title.textContent = "This tree can't load here";
+      body.textContent = "Open it on claude.ai while signed in to see the Jews of Yeti.";
+    } else {
+      title.textContent = "No brothers on the tree yet";
+      body.textContent = state.canWrite
+        ? "Start with the top of the family, then add each little under their big."
+        : "Check back once the family has been added.";
+      add.hidden = !state.canWrite;
+    }
+  }
+
+  function portrait(p) {
+    const box = el("span", { class: "oval", "aria-hidden": "true" });
+    const url = store.photoUrl(p.cover);
+    if (url) {
+      const img = el("img", { src: url, alt: "", decoding: "async", draggable: "false" });
+      img.addEventListener("error", () => img.replaceWith(el("span", { class: "mono", text: initials(p) })), { once: true });
+      box.append(img);
+    } else box.append(el("span", { class: "mono", text: initials(p) }));
+    return box;
+  }
+  const sizeCls = (s, a, b) => (s.length > b ? " xs" : s.length > a ? " sm" : "");
+  function plate(p) {
+    return el("span", { class: "plate" },
+      el("span", { class: "first" + sizeCls(p.first, 11, 15), text: p.first || " " }),
+      el("span", { class: "last" + sizeCls(p.last, 10, 14), text: p.last || " " }));
+  }
+
+  // ---------- Profile ----------
+  function renderProfile() {
+    const panel = $("profile"), t = state.tree;
+    const p = state.selected && t ? t.byId.get(state.selected) : null;
+    if (!p) { panel.hidden = true; return; }
+    panel.hidden = false;
+    const P = t.pos.get(p.id);
+    const bigId = t.parentOf.get(p.id);
+    const littles = P.kids.map((k) => t.byId.get(k));
+
+    // Photo: the full shot, else the tree headshot, else a monogram.
+    const fig = $("pf-photo");
+    const fullUrl = store.photoUrl(p.full), coverUrl = store.photoUrl(p.cover);
+    const src = fullUrl || coverUrl;
+    const key = src + "|" + (fullUrl ? "full" : "cover") + "|" + initials(p);
+    if (fig.dataset.key !== key) {
+      fig.dataset.key = key;
+      const monogram = () => el("div", { class: "pf-empty" },
+        el("span", { class: "pf-mono", text: initials(p) }),
+        el("span", { class: "pf-note", text: "No photos yet" }));
+      if (src) {
+        const img = el("img", { src, alt: `${fullName(p)}${fullUrl ? ", full photo" : ""}` });
+        img.addEventListener("error", () => fig.replaceChildren(monogram()), { once: true });
+        fig.replaceChildren(img);
+        if (!fullUrl) fig.append(el("figcaption", { text: "No full photo yet" }));
+      } else fig.replaceChildren(monogram());
+    }
+
+    $("pf-gen").textContent = `Generation ${P.depth + 1}` + (p.pledgeClass ? ` · ${p.pledgeClass}` : "");
+    $("pf-first").textContent = p.first;
+    $("pf-last").textContent = p.last;
+    $("pf-nick").hidden = !p.nickname;
+    $("pf-nick").textContent = p.nickname ? `“${p.nickname}”` : "";
+
+    const chain = ancestors(p.id);
+    const line = $("pf-line");
+    line.hidden = chain.length < 2;
+    line.replaceChildren(el("span", { class: "lbl", text: "Line" }));
+    chain.forEach((id, i) => {
+      if (i) line.append(el("span", { class: "sep", "aria-hidden": "true", text: "›" }));
+      const q = t.byId.get(id);
+      line.append(id === p.id
+        ? el("span", { class: "here", "aria-current": "true", text: fullName(q) })
+        : personLink(q));
+    });
+
+    const facts = [];
+    facts.push(["Big", bigId ? personLink(t.byId.get(bigId)) : el("span", { class: "muted", text: "None, top of the tree" })]);
+    facts.push(["Littles", littles.length
+      ? littles.flatMap((l, i) => (i ? [", ", personLink(l)] : [personLink(l)]))
+      : el("span", { class: "muted", text: "None yet" })]);
+    if (p.pledgeClass) facts.push(["Pledge class", p.pledgeClass]);
+    if (p.gradYear) facts.push(["Graduation", p.gradYear]);
+    if (p.major) facts.push(["Major", p.major]);
+    if (p.hometown) facts.push(["Hometown", p.hometown]);
+    if (p.positions) facts.push(["Positions", p.positions]);
+    const below = descendants(p.id).size;
+    if (below > littles.length) facts.push(["Line below", `${below} brothers`]);
+    $("pf-facts").replaceChildren(...facts.flatMap(([k, v]) => [el("dt", { text: k }), el("dd", null, v)]));
+
+    const bio = $("pf-bio");
+    if (p.bio) bio.replaceChildren(...p.bio.split(/\n\s*\n/).map((para) => el("p", { text: para.trim() })));
+    else bio.replaceChildren(el("p", { class: "muted", text: state.canWrite ? "No bio yet. Use Edit bio to add one." : "No bio yet." }));
+
+    $("pf-actions").hidden = !state.canWrite;
+    const confirming = state.canWrite && state.confirmDelete === p.id;
+    $("pf-confirm").hidden = !confirming;
+    if (confirming) {
+      const bigName = bigId ? fullName(t.byId.get(bigId)) : "";
+      const n = state.people.filter((x) => x.big === p.id).length;
+      let msg = `Delete ${fullName(p)} from the tree?`;
+      if (n) msg += ` ${n === 1 ? "Their little moves" : `Their ${n} littles move`} up to ${bigName || "the top of the tree"}.`;
+      msg += " Their photos are deleted too.";
+      $("pf-confirm-text").textContent = msg;
+    }
+  }
+
+  function personLink(p) {
+    return el("button", { type: "button", class: "linkish", onclick: () => select(p.id, { center: true }), text: fullName(p) });
+  }
+
+  function select(id, { center = false } = {}) {
+    const changed = state.selected !== id;
+    state.selected = id;
+    state.confirmDelete = null;
+    render();
+    if (changed) $("profile").scrollTop = 0;
+    $("pf-heading").focus({ preventScroll: true });
+    if (center) centerOn(id);
+    else revealIfCovered(id);
+  }
+  function closeProfile() {
+    const id = state.selected;
+    state.selected = null;
+    state.confirmDelete = null;
+    render();
+    const rec = id && nodeEls.get(id);
+    if (rec) rec.btn.focus({ preventScroll: true });
+  }
+
+  // ---------- Pan & zoom ----------
+  const board = $("board");
+  function applyZoom() {
+    const z = state.zoom, st = $("stage"), sz = $("sizer");
+    st.style.width = state.W + "px";
+    st.style.height = state.H + "px";
+    st.style.transform = `scale(${z})`;
+    sz.style.width = Math.ceil(state.W * z) + "px";
+    sz.style.height = Math.ceil(state.H * z) + "px";
+  }
+  function setZoom(nz, ax, ay) {
+    nz = clamp(nz, 0.3, 1.6);
+    if (ax == null) { ax = board.clientWidth / 2; ay = board.clientHeight / 2; }
+    const sz = $("sizer");
+    const cx = (board.scrollLeft + ax - sz.offsetLeft) / state.zoom;
+    const cy = (board.scrollTop + ay - sz.offsetTop) / state.zoom;
+    state.zoom = nz;
+    applyZoom();
+    board.scrollLeft = cx * nz + sz.offsetLeft - ax;
+    board.scrollTop = cy * nz + sz.offsetTop - ay;
+  }
+  function fitView() {
+    state.zoom = clamp(Math.min((board.clientWidth - 24) / state.W, (board.clientHeight - 24) / state.H, 1.2), 0.3, 1.6);
+    applyZoom();
+    board.scrollTo(0, 0);
+  }
+  function initialView() {
+    const t = state.tree;
+    if (!t || !t.roots.length) return;
+    state.zoom = clamp(Math.min((board.clientWidth - 16) / state.W, (board.clientHeight - 16) / state.H), 0.62, 1);
+    applyZoom();
+    const R = t.pos.get(t.roots[0].id);
+    board.scrollLeft = colX(R.x) * state.zoom + $("sizer").offsetLeft - board.clientWidth / 2;
+    board.scrollTop = 0;
+  }
+  function drawerCover() {
+    const pf = $("profile");
+    return !pf.hidden && window.innerWidth > 640 ? pf.offsetWidth : 0;
+  }
+  function centerOn(id) {
+    const t = state.tree, P = t && t.pos.get(id);
+    if (!P) return;
+    const d = dims(P.depth), visW = board.clientWidth - drawerCover();
+    board.scrollTo({
+      left: colX(P.x) * state.zoom + $("sizer").offsetLeft - visW / 2,
+      top: (rowTop(P.depth) + d.h / 2) * state.zoom - board.clientHeight / 2,
+      behavior: reduceMotion ? "auto" : "smooth",
+    });
+  }
+  function revealIfCovered(id) {
+    const rec = nodeEls.get(id), cover = drawerCover();
+    if (!rec || !cover) return;
+    const r = rec.btn.getBoundingClientRect();
+    if (r.right > window.innerWidth - cover - 16) centerOn(id);
+  }
+
+  let drag = null;
+  board.addEventListener("pointerdown", (e) => {
+    if (e.pointerType !== "mouse" || e.button !== 0 || e.target.closest(".node")) return;
+    drag = { x: e.clientX, y: e.clientY, l: board.scrollLeft, t: board.scrollTop, id: e.pointerId };
+    board.setPointerCapture(e.pointerId);
+    board.classList.add("is-dragging");
+  });
+  board.addEventListener("pointermove", (e) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    board.scrollLeft = drag.l - (e.clientX - drag.x);
+    board.scrollTop = drag.t - (e.clientY - drag.y);
+  });
+  const endDrag = () => { drag = null; board.classList.remove("is-dragging"); };
+  board.addEventListener("pointerup", endDrag);
+  board.addEventListener("pointercancel", endDrag);
+  board.addEventListener("wheel", (e) => {
+    if (!e.ctrlKey && !e.metaKey) return;
+    e.preventDefault();
+    const r = board.getBoundingClientRect();
+    setZoom(state.zoom * Math.exp(-e.deltaY * 0.0025), e.clientX - r.left, e.clientY - r.top);
+  }, { passive: false });
+  $("zoom-in").addEventListener("click", () => setZoom(state.zoom * 1.2));
+  $("zoom-out").addEventListener("click", () => setZoom(state.zoom / 1.2));
+  $("zoom-fit").addEventListener("click", fitView);
+
+  $("nodes").addEventListener("click", (e) => {
+    const n = e.target.closest(".node");
+    if (n) select(n.dataset.id);
+  });
+
+  // ---------- Search ----------
+  const searchInput = $("search"), results = $("search-results");
+  function renderSearch() {
+    const q = state.query, t = state.tree;
+    if (!q || !t) { results.hidden = true; results.replaceChildren(); return; }
+    const hits = state.people.filter((p) => matches(p, q)).sort(byName).slice(0, 8);
+    results.replaceChildren(...(hits.length
+      ? hits.map((p) => el("li", null, el("button", {
+          type: "button",
+          onclick: () => pick(p.id),
+        }, el("span", { text: fullName(p) + (p.nickname ? ` “${p.nickname}”` : "") }), el("small", { text: `Gen ${t.pos.get(p.id).depth + 1}` }))))
+      : [el("li", { class: "none", text: "No brother by that name" })]));
+    results.hidden = false;
+  }
+  function pick(id) {
+    state.query = "";
+    searchInput.value = "";
+    renderSearch();
+    select(id, { center: true });
+  }
+  searchInput.addEventListener("input", () => {
+    state.query = searchInput.value.trim().toLowerCase();
+    renderSearch();
+    renderBoard();
+  });
+  searchInput.addEventListener("focus", renderSearch);
+  searchInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      const first = results.querySelector("button");
+      if (first) { e.preventDefault(); first.click(); }
+    } else if (e.key === "Escape") {
+      searchInput.value = "";
+      state.query = "";
+      renderSearch();
+      renderBoard();
+    }
+  });
+  document.addEventListener("pointerdown", (e) => { if (!e.target.closest(".search")) results.hidden = true; });
+
+  // ---------- Profile actions ----------
+  $("pf-close").addEventListener("click", closeProfile);
+  $("pf-edit").addEventListener("click", () => openEditor(state.selected));
+  $("pf-add-little").addEventListener("click", () => openEditor(null, state.selected));
+  $("pf-delete").addEventListener("click", () => { state.confirmDelete = state.selected; renderProfile(); $("pf-confirm-no").focus(); });
+  $("pf-confirm-no").addEventListener("click", () => { state.confirmDelete = null; renderProfile(); $("pf-delete").focus(); });
+  $("pf-confirm-yes").addEventListener("click", deletePerson);
+  $("add-btn").addEventListener("click", () => openEditor(null, state.selected || undefined));
+  $("msg-add").addEventListener("click", () => openEditor(null));
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !$("editor").open && state.selected && document.activeElement !== searchInput) closeProfile();
+  });
+
+  async function deletePerson() {
+    const t = state.tree, p = t && t.byId.get(state.confirmDelete);
+    if (!p) return;
+    const yes = $("pf-confirm-yes");
+    yes.disabled = true;
+    const newBig = t.parentOf.get(p.id) || "";
+    try {
+      for (const k of state.people.filter((x) => x.big === p.id)) await store.patch(k.id, { big: newBig });
+      await store.remove(p.id);
+      store.dropPhoto(p.cover);
+      store.dropPhoto(p.full);
+      state.selected = null;
+      state.confirmDelete = null;
+      render();
+      toast(`${fullName(p)} was removed from the tree`);
+    } catch (e) {
+      handleWriteRefusal(e);
+      toast(errText(e));
+    } finally {
+      yes.disabled = false;
+    }
+  }
+
+  // ---------- Editor ----------
+  const dialog = $("editor");
+  let ed = null;
+
+  function openEditor(id, presetBig) {
+    const t = state.tree;
+    const p = id && t ? t.byId.get(id) : null;
+    ed = {
+      id: p ? p.id : null,
+      existing: p,
+      saving: false,
+      cover: { mode: "keep", file: null, url: "", uploaded: "" },
+      full: { mode: "keep", file: null, url: "", uploaded: "" },
+    };
+    $("ed-title").textContent = p ? `Edit ${p.first || "brother"}` : presetBig && t && t.byId.has(presetBig)
+      ? `Add a little to ${t.byId.get(presetBig).first}` : "Add a brother";
+    $("ed-first").value = p ? p.first : "";
+    $("ed-last").value = p ? p.last : "";
+    $("ed-nick").value = p ? p.nickname : "";
+    $("ed-pledge").value = p ? p.pledgeClass : "";
+    $("ed-grad").value = p ? p.gradYear : "";
+    $("ed-major").value = p ? p.major : "";
+    $("ed-home").value = p ? p.hometown : "";
+    $("ed-pos").value = p ? p.positions : "";
+    $("ed-bio").value = p ? p.bio : "";
+    fillBigSelect(p, p ? (t.parentOf.get(p.id) || "") : presetBig);
+    $("ed-photos").hidden = !state.canUpload;
+    $("ed-nophotos").hidden = state.canUpload;
+    renderEdPhoto("cover");
+    renderEdPhoto("full");
+    $("ed-error").hidden = true;
+    $("ed-status").textContent = "";
+    $("ed-save").disabled = false;
+    $("ed-save").textContent = p ? "Save changes" : "Add to tree";
+    dialog.showModal();
+    $("ed-first").focus();
+  }
+
+  function fillBigSelect(p, value) {
+    const sel = $("ed-big"), t = state.tree;
+    const excluded = p ? new Set([p.id, ...descendants(p.id)]) : new Set();
+    const options = state.people.filter((x) => !excluded.has(x.id)).sort(byName);
+    const opts = [];
+    const haveValue = value === "" || (value && options.some((x) => x.id === value));
+    if (options.length && !haveValue) opts.push(el("option", { value: CHOOSE, disabled: true, text: "Choose their big" }));
+    for (const x of options) opts.push(el("option", { value: x.id, text: fullName(x) }));
+    opts.push(el("option", { value: "", text: state.people.length ? "No big (starts a new line)" : "No big (top of the tree)" }));
+    sel.replaceChildren(...opts);
+    sel.value = haveValue ? value : options.length ? CHOOSE : "";
+  }
+
+  function renderEdPhoto(kind) {
+    const s = ed[kind];
+    const had = ed.existing ? ed.existing[kind] : "";
+    const url = s.mode === "new" ? s.url : s.mode === "keep" ? store.photoUrl(had) : "";
+    const prev = $(`ed-${kind}-prev`);
+    if (url) {
+      const img = el("img", { src: url, alt: "" });
+      img.addEventListener("error", () => prev.replaceChildren(el("span", { class: "ed-none", text: "No preview, still saves" })), { once: true });
+      prev.replaceChildren(img);
+    } else prev.replaceChildren(el("span", { class: "ed-none", text: "No photo" }));
+    $(`ed-${kind}-clear`).hidden = !url;
+    $(`ed-${kind}-pick`).textContent = url ? "Replace" : "Choose photo";
+  }
+
+  for (const kind of ["cover", "full"]) {
+    $(`ed-${kind}-pick`).addEventListener("click", () => $(`ed-${kind}`).click());
+    $(`ed-${kind}`).addEventListener("change", (e) => {
+      const f = e.target.files && e.target.files[0];
+      e.target.value = "";
+      if (!f || !ed) return;
+      if (ed[kind].url) URL.revokeObjectURL(ed[kind].url);
+      ed[kind] = { mode: "new", file: f, url: URL.createObjectURL(f), uploaded: "" };
+      renderEdPhoto(kind);
+    });
+    $(`ed-${kind}-clear`).addEventListener("click", () => {
+      if (ed[kind].url) URL.revokeObjectURL(ed[kind].url);
+      ed[kind] = { mode: "clear", file: null, url: "", uploaded: "" };
+      renderEdPhoto(kind);
+    });
+  }
+
+  function edError(msg, focusId) {
+    const box = $("ed-error");
+    box.textContent = msg;
+    box.hidden = false;
+    if (focusId) $(focusId).focus();
+  }
+
+  $("ed-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!ed || ed.saving) return;
+    const first = $("ed-first").value.trim(), last = $("ed-last").value.trim();
+    const big = $("ed-big").value;
+    if (!first) return edError("Add a first name.", "ed-first");
+    if (!last) return edError("Add a last name.", "ed-last");
+    if (big === CHOOSE) return edError("Choose their big, or pick “No big” to start a new line.", "ed-big");
+    $("ed-error").hidden = true;
+
+    const p = ed.existing;
+    const id = ed.id || store.newId();
+    ed.id = id;
+    ed.saving = true;
+    $("ed-save").disabled = true;
+    const photos = { cover: p ? p.cover : "", full: p ? p.full : "" };
+    const drop = [];
+    try {
+      for (const kind of ["cover", "full"]) {
+        const s = ed[kind], had = p ? p[kind] : "";
+        if (s.mode === "new") {
+          if (!s.uploaded) {
+            $("ed-status").textContent = "Uploading photos…";
+            const blob = await shrink(s.file, kind === "cover" ? 520 : 1600);
+            s.uploaded = await store.upload(blob);
+          }
+          if (had) drop.push(had);
+          photos[kind] = s.uploaded;
+        } else if (s.mode === "clear" && had) {
+          drop.push(had);
+          photos[kind] = "";
+        }
+      }
+      $("ed-status").textContent = "Saving…";
+      const bigChanged = !p || (state.tree.parentOf.get(p.id) || "") !== big;
+      await store.save(id, {
+        first,
+        last,
+        nickname: $("ed-nick").value.trim(),
+        big,
+        pledgeClass: $("ed-pledge").value.trim(),
+        gradYear: $("ed-grad").value.trim(),
+        major: $("ed-major").value.trim(),
+        hometown: $("ed-home").value.trim(),
+        positions: $("ed-pos").value.trim(),
+        bio: $("ed-bio").value.trim(),
+        cover: photos.cover,
+        full: photos.full,
+        order: bigChanged ? Date.now() : p.order,
+      });
+      for (const a of drop) store.dropPhoto(a);
+      ed.saving = false;
+      dialog.close();
+      state.pendingCenter = id;
+      select(id);
+      toast(p ? "Saved" : `${first} ${last} was added to the tree`);
+    } catch (err) {
+      ed.saving = false;
+      $("ed-save").disabled = false;
+      $("ed-status").textContent = "";
+      handleWriteRefusal(err);
+      edError(errText(err));
+    }
+  });
+
+  $("ed-cancel").addEventListener("click", () => dialog.close());
+  $("ed-close").addEventListener("click", () => dialog.close());
+  dialog.addEventListener("cancel", (e) => { if (ed && ed.saving) e.preventDefault(); });
+  dialog.addEventListener("close", () => {
+    if (ed) for (const kind of ["cover", "full"]) if (ed[kind].url) URL.revokeObjectURL(ed[kind].url);
+    ed = null;
+  });
+
+  // Shrink photos before upload so the tree stays quick on phones.
+  async function shrink(file, max) {
+    let src = null, w = 0, h = 0;
+    try {
+      src = await createImageBitmap(file, { imageOrientation: "from-image" });
+      w = src.width; h = src.height;
+    } catch (e) {
+      try {
+        src = await new Promise((res, rej) => {
+          const img = new Image();
+          img.onload = () => res(img);
+          img.onerror = rej;
+          img.src = URL.createObjectURL(file);
+        });
+        w = src.naturalWidth; h = src.naturalHeight;
+      } catch (e2) { src = null; }
+    }
+    const okType = /^image\/(jpeg|png|gif|webp)$/.test(file.type);
+    if (!src || !w || !h) {
+      if (okType) return file;
+      throw { code: "unsupported_type" };
+    }
+    if (file.type === "image/gif" && okType) return file;
+    const s = Math.min(1, max / Math.max(w, h));
+    if (s === 1 && okType && file.size < 1.5e6) return file;
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(w * s);
+    canvas.height = Math.round(h * s);
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue("--navy-1").trim() || "#0e1b31";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(src, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise((res) => canvas.toBlob(res, "image/jpeg", 0.86));
+    if (!blob) { if (okType) return file; throw { code: "unsupported_type" }; }
+    return blob;
+  }
+
+  function handleWriteRefusal(err) {
+    if (err && err.where === "db" && err.code === "invalid_argument") {
+      state.canWrite = false;
+      render();
+    }
+  }
+
+  function errText(e) {
+    const code = e && e.code;
+    if (e && e.where === "db") {
+      return ({
+        invalid_argument: "You can view this tree but not change it. Ask the owner for edit access.",
+        quota_exceeded: "The tree has hit its storage limit, so this change can't be saved.",
+        resource_exhausted: "Too many changes at once. Wait a moment, then try again.",
+        revoked: "Your access to this tree changed. Reload the page.",
+      })[code] || "That change didn't save. Check your connection and try again.";
+    }
+    return ({
+      too_large: "That photo is too large. Photos can be up to 20 MB.",
+      unsupported_type: "That photo format can't be used. Choose a JPG, PNG or WebP image.",
+      quota_or_state: "Photo storage for this tree is full. Remove some photos and try again.",
+      rate_limited: "Too many uploads at once. Wait a moment, then save again.",
+      upstream_auth: "Your sign-in expired. Reload the page and try again.",
+      not_granted: "Only editors of this page can add photos.",
+      capability_disabled: "Photos can't be added in this view.",
+    })[code] || "The photo didn't upload. Check your connection and try again.";
+  }
+
+  let toastTimer = 0;
+  function toast(msg) {
+    const t = $("toast");
+    t.textContent = msg;
+    t.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.hidden = true; }, 3600);
+  }
+
+  render();
+  connect();
+})();
+</script>

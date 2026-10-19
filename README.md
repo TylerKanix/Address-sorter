@@ -57,6 +57,10 @@ The app is a static website: just HTML, CSS and JavaScript, with no server and n
 
 Build it with `node artifact/build.js` (writes `artifact/address-sorter.html`).
 
+## Jews of Yeti family tree
+
+`frat-tree/` holds an unrelated single-file Claude artifact: an interactive fraternity family tree with bios and photos. See [frat-tree/README.md](frat-tree/README.md).
+
 ## Development
 
 ```
